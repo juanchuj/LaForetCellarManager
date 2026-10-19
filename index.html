@@ -190,11 +190,11 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 [data-tt][data-tt-pos="below"]:hover::after{bottom:auto;top:calc(100% + 6px)}
 [data-tt][data-tt-pos="below"]:hover::before{bottom:auto;top:calc(100% + 1px);border-top-color:transparent;border-bottom-color:var(--line)}
 @keyframes tt-fade{from{opacity:0;transform:translateX(-50%) translateY(2px)} to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.recv-grid{display:grid;grid-template-columns:120px 1fr 1fr 140px 1fr;gap:10px;align-items:start}
-.recv-grid .recv-field{min-width:0}
-.recv-grid .recv-field input,.recv-grid .recv-field select{box-sizing:border-box;max-width:100%}
-@media (max-width:900px){.recv-grid{grid-template-columns:120px 1fr 1fr}}
-@media (max-width:600px){.recv-grid{grid-template-columns:1fr 1fr}}
+.recv-trace{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
+.recv-trace .recv-field{min-width:0}
+.recv-trace .recv-field input,.recv-trace .recv-field select{box-sizing:border-box;max-width:100%}
+@media (max-width:900px){.recv-trace{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:500px){.recv-trace{grid-template-columns:1fr}}
 .stack{display:flex;flex-direction:column;gap:10px}
 .row{display:flex;gap:10px;align-items:center}
 .spacer{flex:1}
@@ -5812,21 +5812,43 @@ function renderNewBatchModal(){
 function renderReceivingSection(nb){
   const r = nb.receiving || (nb.receiving = { coreT:null, provider:'', farm:'', slaughterDate:'', cut:'', acceptance:'pending', notes:'' });
   const t = r.coreT;
-  let level = 'gray', label = 'Sin medir', pill = 'muted';
+  let level = 'gray', label = 'Sin medir · PCC pendiente', pill = 'muted', pillBg = 'rgba(138,131,120,0.08)';
   if(t !== null && t !== '' && !isNaN(+t)){
     const tn = +t;
-    if(tn <= 4){ level='green'; label='Verde · dentro de rango'; pill='sage'; }
-    else if(tn <= 7){ level='yellow'; label='Amarilla · exposición parcial, documentar'; pill='gold'; }
-    else { level='red'; label='Roja · fuera de rango, decisión obligatoria'; pill='danger'; }
+    if(tn <= 4){ level='green'; label='● Verde · dentro de rango'; pill='sage'; pillBg='rgba(122,139,111,0.12)'; }
+    else if(tn <= 7){ level='yellow'; label='● Amarilla · documentar exposición'; pill='gold'; pillBg='rgba(176,148,104,0.14)'; }
+    else { level='red'; label='● Roja · decisión obligatoria'; pill='danger'; pillBg='rgba(201,74,61,0.14)'; }
   }
+  const pillColor = pill==='sage'?'var(--sage)':pill==='gold'?'var(--amber)':pill==='danger'?'var(--rust)':'var(--muted)';
+  const pillBorder = pill==='muted' ? 'var(--line)' : pillColor;
   return `
-    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:5px;padding:12px 14px;margin-bottom:10px">
-      <div class="recv-grid">
-        <div class="recv-field recv-coreT">
-          <label>Core T °C <span class="tiny" style="text-transform:none;letter-spacing:0;color:var(--muted)">(probe)</span></label>
-          <input type="number" step="0.1" value="${r.coreT??''}" oninput="window._newBatch.receiving.coreT=this.value===''?null:+this.value;renderNewBatchModal()" placeholder="2.3" style="width:100%">
-          <div class="tiny" style="margin-top:4px"><span class="pill ${pill}">${label}</span></div>
+    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-bottom:10px">
+
+      <!-- PCC row: Core T + status, prominent -->
+      <div style="display:flex;gap:14px;align-items:flex-end;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--line);flex-wrap:wrap">
+        <div style="min-width:120px">
+          <label>Core T al recibir °C</label>
+          <input type="number" step="0.1" value="${r.coreT??''}" oninput="window._newBatch.receiving.coreT=this.value===''?null:+this.value;renderNewBatchModal()" placeholder="2.3" style="width:110px;font-size:17px;font-family:'JetBrains Mono',monospace;text-align:center;height:38px">
         </div>
+        <div style="flex:1;min-width:200px;padding-bottom:4px">
+          <div style="display:inline-block;padding:7px 14px;background:${pillBg};border:1px solid ${pillBorder};border-radius:4px;color:${pillColor};font-size:12px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;line-height:1">${label}</div>
+          <div class="tiny" style="color:var(--muted);margin-top:5px">Probe Lavatools · umbrales USDA/EFSA: &lt;4°C verde · 4-7°C amarilla · &gt;7°C roja</div>
+        </div>
+      </div>
+
+      ${level==='yellow' || level==='red' ? `
+      <div style="margin-bottom:14px;padding:10px 12px;background:${pillBg};border-left:3px solid ${pillBorder};border-radius:0 4px 4px 0">
+        <label style="color:${pillColor}">Decisión de aceptación (requerida)</label>
+        <select onchange="window._newBatch.receiving.acceptance=this.value" style="width:100%">
+          <option value="pending" ${r.acceptance==='pending'?'selected':''}>— seleccionar —</option>
+          <option value="accept-with-note" ${r.acceptance==='accept-with-note'?'selected':''}>Aceptar con nota</option>
+          <option value="accept-conditional" ${r.acceptance==='accept-conditional'?'selected':''}>Aceptar condicional (procesar hoy)</option>
+          <option value="reject" ${r.acceptance==='reject'?'selected':''}>Rechazar lote</option>
+        </select>
+      </div>` : ''}
+
+      <!-- Traceability row: 4 equal cols -->
+      <div class="recv-trace">
         <div class="recv-field">
           <label>Proveedor</label>
           <input value="${escapeAttr(r.provider||'')}" oninput="window._newBatch.receiving.provider=this.value" placeholder="ej: Carnes Suárez" style="width:100%">
@@ -5835,7 +5857,7 @@ function renderReceivingSection(nb){
           <label>Finca / matadero</label>
           <input value="${escapeAttr(r.farm||'')}" oninput="window._newBatch.receiving.farm=this.value" placeholder="opcional" style="width:100%">
         </div>
-        <div class="recv-field recv-date">
+        <div class="recv-field">
           <label>Fecha sacrificio</label>
           <input type="date" value="${r.slaughterDate||''}" oninput="window._newBatch.receiving.slaughterDate=this.value" style="width:100%">
         </div>
@@ -5844,23 +5866,11 @@ function renderReceivingSection(nb){
           <input value="${escapeAttr(r.cut||'')}" oninput="window._newBatch.receiving.cut=this.value" placeholder="ej: solomo, pernil" style="width:100%">
         </div>
       </div>
-      ${level==='yellow' || level==='red' ? `
-      <div style="margin-top:10px">
-        <label>Decisión de aceptación (requerida)</label>
-        <select onchange="window._newBatch.receiving.acceptance=this.value" style="width:100%">
-          <option value="pending" ${r.acceptance==='pending'?'selected':''}>— seleccionar —</option>
-          <option value="accept-with-note" ${r.acceptance==='accept-with-note'?'selected':''}>Aceptar con nota</option>
-          <option value="accept-conditional" ${r.acceptance==='accept-conditional'?'selected':''}>Aceptar condicional (procesar hoy)</option>
-          <option value="reject" ${r.acceptance==='reject'?'selected':''}>Rechazar lote</option>
-        </select>
-      </div>` : ''}
-      <div style="margin-top:10px">
-        <label>Notas de recepción (opcional)</label>
+
+      <div style="margin-top:12px">
+        <label>Notas de recepción <span class="tiny" style="text-transform:none;letter-spacing:0;color:var(--muted);font-weight:400">(opcional)</span></label>
         <input value="${escapeAttr(r.notes||'')}" oninput="window._newBatch.receiving.notes=this.value" placeholder="transporte, condiciones visuales, olor, etc." style="width:100%">
       </div>
-    </div>
-    <div class="tiny" style="color:var(--muted);margin-bottom:14px">
-      <b>Umbrales USDA/EFSA:</b> &lt;4°C verde · 4-7°C amarilla · &gt;7°C roja. Es el PCC HACCP de recepción — todo lote queda trazable a origen + core T.
     </div>
   `;
 }
