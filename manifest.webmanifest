@@ -1,0 +1,46 @@
+{
+  "name": "La Forêt · Cellar Manager",
+  "short_name": "La Forêt",
+  "description": "Gestión de madurados y embutidos",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "es",
+  "dir": "ltr",
+  "theme_color": "#2D2926",
+  "background_color": "#1a1816",
+  "categories": ["food", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "icn/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icn/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icn/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icn/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icn/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
