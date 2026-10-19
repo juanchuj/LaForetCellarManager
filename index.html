@@ -6,7 +6,7 @@
 <title>La Forêt · Cellar Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500&family=Marcellus+SC&display=swap">
 <meta name="theme-color" content="#2D2926">
 <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAAAIAD/AQAAFgAAAIlQTkcNChoKAAAADUlIRFIAAAAQAAAAEAgGAAAAH/P/YQAAAcZJREFUeJydkzt3GjEQhT9pV+IRCAfHRWLn+IENmOSEMoX/tav8kBQ5zkm1PBaDU9hr8GFX2kkBLJBUYRqNrjQj3Zk7irV96XWE/7DvP34qAH1I8G6MKhyl2Kx5nhcXtziIrPYigsjqzXBzcblM1wc51lq01n/hUiQPwxBrDSJCqJTCe0+rdY61hlKpRBSNSJIEYI1bjAnJMkelUmY2eySOHwjDcFUDEcE5z81Nh3b7isViQRAEBd7rdWi1LphOZ4jA7e3XLQURIQgComhIu93i8fE38/mcWq1W4J3OFXE8YTKZIiKMxxNKJYtzflsDaw1a6z3+SimsNWsqF1xenuOc4+7uG43GW5RS2wS7ppRCa8Xr63LFU2vi+IEoGnJ29pFyufRvF7IsI89z0jQjTTPy/IV+/zODwZg0TUnTlMFgSJK8YIzZJlBK4Zzj5OQ9zWaDWu0No9GYbveadvuKp6eEo6Mmx8fvuL//hfd+/7f9T13x3nN6+oFqtUoYBjjnqVTKjEYxxoTU63WstQwGQ56fk6JGO13QRNGQPN8XjDEGELwfISJ7BS4SrHQA1lrWqt2T7KZDsC/xggIcNkywmki9cQ4JBvgDnGfvbtLO/FsAAAAASUVORK5CYII=">
 <link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABxklEQVR4nJ2TO3caMRCFP2lX4hEIB8dFYuf4gQ2Y5IQyhf+1q/yQFDnOSbU8FoNT2GvwYVfaSQEskFRhGo2uNCPdmTuKtX3pdYT/sO8/fioAfUjwbowqHKXYrHmeFxe3OIis9iKCyOrNcHNxuUzXBznWWrTWf+FSJA/DEGsNIkKolMJ7T6t1jrWGUqlEFI1IkgRgjVuMCckyR6VSZjZ7JI4fCMNwVQMRwTnPzU2HdvuKxWJBEAQF3ut1aLUumE5niMDt7dctBREhCAKiaEi73eLx8Tfz+ZxarVbgnc4VcTxhMpkiIozHE0oli3N+WwNrDVrrPf5KKaw1ayoXXF6e45zj7u4bjcZblFLbBLumlEJrxevrcsVTa+L4gSgacnb2kXK59G8Xsiwjz3PSNCNNM/L8hX7/M4PBmDRNSdOUwWBIkrxgjNkmUErhnOPk5D3NZoNa7Q2j0Zhu95p2+4qnp4SjoybHx++4v/+F937/t/1PXfHec3r6gWq1ShgGOOepVMqMRjHGhNTrday1DAZDnp+TokY7XdBE0ZA83xeMMQYQvB8hInsFLhKsdADWWtaq3ZPspkOwL/GCAhw2TLCaSL1xDgkG+AOcZ+9u0s78WwAAAABJRU5ErkJggg==">
@@ -96,7 +96,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .app.sidebar-collapsed{padding-left:0}
 .app.sidebar-collapsed .sidebar{transform:translateX(-100%)}
 .sidebar{transition:transform 0.25s ease;position:fixed;top:0;left:0;width:220px;height:100vh;z-index:50;overflow:visible}
-.sidebar > .sidebar-inner{height:100%;overflow-y:auto;overflow-x:hidden;background:var(--bg-2);border-right:1px solid var(--line);padding:22px 0;display:flex;flex-direction:column;transition:opacity 0.2s ease}
+.sidebar > .sidebar-inner{height:100%;overflow-y:auto;overflow-x:hidden;background:var(--bg-2);border-right:1px solid var(--line);padding:14px 0;display:flex;flex-direction:column;transition:opacity 0.2s ease}
 .app.sidebar-collapsed .sidebar > .sidebar-inner{opacity:0;pointer-events:none}
 /* Toggle: half-tab on the right edge of the sidebar (or left edge of viewport when collapsed) */
 .sidebar-toggle{position:absolute;top:26px;left:100%;z-index:60;width:22px;height:44px;border:1px solid var(--line);border-left:none;background:var(--bg-2);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s ease;user-select:none;padding:0;border-radius:0 6px 6px 0;box-shadow:2px 2px 6px rgba(0,0,0,0.15)}
@@ -108,11 +108,11 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   .app.sidebar-collapsed{padding-left:0}
 }
 .sidebar{background:var(--bg-2);border-right:1px solid var(--line);padding:22px 0;display:flex;flex-direction:column}
-.brand{padding:14px 18px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}
-.brand .logo{width:100%}
-.brand .sub{font-family:'Cormorant Garamond','Playfair Display',Georgia,serif;font-style:italic;font-weight:500;font-size:19px;letter-spacing:0.04em;color:var(--brand);margin-top:8px;text-align:center;line-height:1}
-.brand .ver{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);opacity:0.75;text-align:center;margin-top:6px;letter-spacing:0.12em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--line);border-radius:10px;display:inline-block;margin-left:auto;margin-right:auto}
-.brand{display:flex;flex-direction:column;align-items:center}
+.brand{padding:6px 18px 16px;border-bottom:1px solid var(--line);margin-bottom:12px;display:flex;flex-direction:column;align-items:center}
+.brand .logo{width:140px;max-width:100%;display:flex;justify-content:center}
+.brand .logo img{width:100%;height:auto;display:block}
+.brand .sub{font-family:'Marcellus SC','Cormorant Garamond',Georgia,serif;font-weight:400;font-size:14px;letter-spacing:0.22em;color:var(--brand);margin-top:10px;text-align:center;line-height:1;text-transform:uppercase}
+.brand .ver{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);opacity:0.75;text-align:center;margin-top:8px;letter-spacing:0.12em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--line);border-radius:10px;display:inline-block;margin-left:auto;margin-right:auto}
 
 .nav{display:flex;flex-direction:column;gap:2px;padding:0 12px}
 .nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:4px;color:var(--ink-2);text-decoration:none;font-family:'Copperplate','Inter',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;font-weight:400;transition:background .15s,color .15s;cursor:pointer}
