@@ -3644,22 +3644,27 @@ function todaysAgenda(){
   const activeBatches = db.batches.filter(b=>b.status==='in_progress');
   activeBatches.forEach(b=>{
     const sec = findSecadoStage(b);
-    // Pesajes vencidos (>7d sin registro durante Secado)
-    if(sec && sec.startedAt && !sec.done){
+    // A stage is "truly active" only if it has started AND today is at/past that start AND it's not done
+    const secActive = sec && sec.startedAt && new Date(sec.startedAt).getTime() <= now && !sec.done;
+    // Pesajes vencidos (>7d sin registro durante Secado) — solo cuando Secado realmente arrancó
+    if(secActive){
       b.pieces.forEach(p=>{
         const logs = (p.weightLogs||[]).slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
         const latest = logs[0];
-        const daysSince = latest ? Math.floor((now - new Date(latest.date).getTime())/(1000*60*60*24)) : 999;
+        const secStartMs = new Date(sec.startedAt).getTime();
+        // Base de referencia: último log o el inicio de Secado (lo que sea más reciente)
+        const refMs = latest ? Math.max(new Date(latest.date).getTime(), secStartMs) : secStartMs;
+        const daysSince = Math.floor((now - refMs)/(1000*60*60*24));
         const safety = safetyStatus(b, p);
         if(safety.ready) return;
         if(daysSince >= 7){
           items.push({ kind:'weigh', urgency: daysSince, batchId:b.id, pieceId:p.id,
-                       label: `Pesar ${p.code} (${b.ref})`, note: `${daysSince<999?daysSince+'d sin registro':'sin registros'}` });
+                       label: `Pesar ${p.code} (${b.ref})`, note: latest ? `${daysSince}d sin registro` : `${daysSince}d desde inicio Secado · sin registros aún` });
         }
       });
     }
-    // Piezas en objetivo listas (aw cumplido pero stage sin cerrar)
-    if(sec && sec.startedAt && !sec.done){
+    // Piezas en objetivo listas (aw cumplido pero stage sin cerrar) — también requiere Secado activo
+    if(secActive){
       b.pieces.forEach(p=>{
         const safety = safetyStatus(b, p);
         if(safety.aw!==null && safety.aw <= safety.awTarget){
@@ -3676,8 +3681,8 @@ function todaysAgenda(){
       items.push({ kind:'pcc', urgency: 95, batchId:b.id,
                    label: `${b.ref} recepción con T>4°C sin decisión`, note: 'Documentar aceptar/rechazar' });
     }
-    // Fermentación: pH no registrado en 24h de etapa activa
-    const fermStage = (b.stages||[]).find(s=>s.kind==='Fermentado' && !s.done && s.startedAt);
+    // Fermentación: pH no registrado en 24h — solo si Fermentado realmente arrancó
+    const fermStage = (b.stages||[]).find(s=>s.kind==='Fermentado' && !s.done && s.startedAt && new Date(s.startedAt).getTime() <= now);
     if(fermStage){
       const hoursInFerm = (now - new Date(fermStage.startedAt).getTime())/(1000*60*60);
       const phLogs = (b.phLogs||[]).filter(l=>l.stageKind==='Fermentado');
@@ -3696,8 +3701,10 @@ function todaysAgenda(){
                      label: `${cs.kind} de ${b.ref} vencida`, note: `${-eta}d vencida · revisar/avanzar` });
       }
     }
-    // v2.1 #18 — Danger Zone contextual por etapa (usa envLog Govee)
-    const envStage = cs ? envStats(b, cs.kind) : null;
+    // v2.1 #18 — Danger Zone contextual por etapa (usa envLog Govee).
+    // Solo evaluar si la etapa actual realmente arrancó (startedAt <= now).
+    const csActive = cs && cs.startedAt && new Date(cs.startedAt).getTime() <= now;
+    const envStage = csActive ? envStats(b, cs.kind) : null;
     if(envStage && envStage.avgT !== null){
       const avgT = envStage.avgT;
       if(cs.kind === 'Curado' && avgT > 6){
@@ -3730,9 +3737,10 @@ function todaysAgenda(){
                      label: `${b.ref}: ${r.pcc.label}`, note: `PCC violado · ${r.detail}` });
       });
     }
-    // Case hardening: alerta si Secado activo con VPD alto
+    // Case hardening: alerta si Secado realmente arrancó con VPD alto
     const secCh = findSecadoStage(b);
-    if(secCh && secCh.startedAt && !secCh.done){
+    const secChActive = secCh && secCh.startedAt && new Date(secCh.startedAt).getTime() <= now && !secCh.done;
+    if(secChActive){
       const thickest = b.pieces.reduce((a,b)=> (a.thickness||0)>(b.thickness||0)?a:b, b.pieces[0]);
       if(thickest){
         const r = caseHardeningRisk(b, thickest);
@@ -6700,12 +6708,17 @@ function finishBatch(id){
    ═══════════════════════════════════════════════════════════ */
 
 /* Build list of pieces that need weighing across all active batches.
-   Priority: no log in last 7 days, then by batch urgency. */
+   Only pieces in a batch whose Secado stage has actually started (startedAt <= now)
+   AND is not done. Pieces in earlier stages (Curado, Fermentado, etc.) don't need
+   routine weighing — their weight isn't the control variable yet. */
 function piecesNeedingWeighing(){
   const list = [];
+  const now = Date.now();
   db.batches.filter(b=>b.status==='in_progress').forEach(b=>{
     const sec = findSecadoStage(b);
-    if(!sec || !sec.startedAt) return; // only pieces in Secado/Madurado need regular weighing
+    if(!sec || !sec.startedAt) return;
+    if(new Date(sec.startedAt).getTime() > now) return; // Secado hasn't started yet
+    if(sec.done) return;
     b.pieces.forEach(p=>{
       const logs = (p.weightLogs||[]).slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
       const latest = logs[0];
