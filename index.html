@@ -3174,6 +3174,7 @@ function viewBatchDetail(){
         ${b.status==='done' ? `<button class="btn sm" onclick="openTastingModal('${b.id}')">${b.tasting?'✎ Cata':'＋ Cata'}</button>` : ''}
         ${b.status==='in_progress'?`<button class="btn sm ghost" onclick="finishBatch('${b.id}')">Marcar terminado</button>`:''}
         <button class="btn sm danger" onclick="discardBatch('${b.id}')">${b.status==='discarded'?'Reactivar':'Descartar'}</button>
+        <button class="btn sm" style="background:var(--rust);color:#fff;border-color:var(--rust)" onclick="deleteBatchHard('${b.id}')" title="Eliminación permanente con confirmación de seguridad">🗑 Eliminar</button>
       </div>
     </div>
 
@@ -5996,6 +5997,131 @@ function renderEnvSummary(b){
     v2.0 — #41 CATA ORGANOLÉPTICA
    ═══════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════
+    v2.3+ — SAFE DELETE MODAL
+    5s countdown + CAPTCHA ("ELIMINAR") + explicit damage list
+   ═══════════════════════════════════════════════════════════ */
+
+function openSafeDeleteModal({kind, label, details, warning, onConfirm}){
+  // Clear any previous timer
+  if(window._safeDeleteTimer){ clearInterval(window._safeDeleteTimer); window._safeDeleteTimer = null; }
+  window._safeDeleteState = {
+    kind, label, details, warning, onConfirm,
+    countdown: 5,
+    captchaOK: false
+  };
+  renderSafeDeleteModal();
+  // Start countdown
+  window._safeDeleteTimer = setInterval(()=>{
+    const s = window._safeDeleteState;
+    if(!s){ clearInterval(window._safeDeleteTimer); window._safeDeleteTimer = null; return; }
+    s.countdown = Math.max(0, s.countdown - 1);
+    updateSafeDeleteCountdown();
+    if(s.countdown === 0){
+      clearInterval(window._safeDeleteTimer);
+      window._safeDeleteTimer = null;
+    }
+  }, 1000);
+}
+
+function renderSafeDeleteModal(){
+  const s = window._safeDeleteState;
+  if(!s) return;
+  showModal(`
+    <div class="modal" style="max-width:520px">
+      <div class="modal-head">
+        <h2 style="color:var(--rust)">⚠ Eliminación permanente</h2>
+        <button class="btn ghost" onclick="closeSafeDelete()">✕</button>
+      </div>
+
+      <div style="background:rgba(167,94,58,0.08);border:1px solid var(--rust);border-left:3px solid var(--rust);border-radius:4px;padding:14px 16px;margin-bottom:14px">
+        <div class="tiny" style="color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Vas a eliminar permanentemente este ${s.kind}:</div>
+        <div style="font-size:16px;font-weight:600;color:var(--brand);font-family:'JetBrains Mono',monospace;margin:4px 0">${escapeHtml(s.label)}</div>
+        <div class="tiny" style="color:var(--ink-2);margin-top:6px">Contiene: ${escapeHtml(s.details)}</div>
+      </div>
+
+      <div style="background:var(--bg-2);border:1px dashed var(--line);border-radius:4px;padding:10px 14px;margin-bottom:14px">
+        <div class="tiny" style="color:var(--amber)">${escapeHtml(s.warning)}</div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label class="tiny">Para confirmar, escribí la palabra <b style="color:var(--rust);font-family:'JetBrains Mono',monospace">ELIMINAR</b> en el campo:</label>
+        <input type="text" id="safe-del-captcha" placeholder="ELIMINAR"
+               oninput="checkSafeDeleteCaptcha(this.value)"
+               autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+               style="width:100%;font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;text-transform:uppercase">
+      </div>
+
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div class="tiny" style="color:var(--muted)" id="safe-del-help">
+          Esperá <span id="safe-del-countdown" style="color:var(--rust);font-family:'JetBrains Mono',monospace;font-weight:600">5s</span> antes de poder confirmar.
+        </div>
+        <div class="row" style="gap:8px">
+          <button class="btn ghost" onclick="closeSafeDelete()">Cancelar</button>
+          <button class="btn" id="safe-del-confirm" disabled
+                  style="background:var(--rust);color:#fff;border-color:var(--rust);opacity:0.4;cursor:not-allowed"
+                  onclick="executeSafeDelete()">Eliminar permanentemente</button>
+        </div>
+      </div>
+    </div>
+  `);
+  setTimeout(()=>{ const el = document.getElementById('safe-del-captcha'); if(el) el.focus(); }, 50);
+}
+
+function updateSafeDeleteCountdown(){
+  const s = window._safeDeleteState;
+  if(!s) return;
+  const el = document.getElementById('safe-del-countdown');
+  const helpEl = document.getElementById('safe-del-help');
+  if(!el) return;
+  if(s.countdown > 0){
+    el.textContent = s.countdown + 's';
+  } else if(helpEl){
+    helpEl.innerHTML = s.captchaOK
+      ? '<span style="color:var(--sage)">✓ Listo para confirmar</span>'
+      : 'Escribí <b style="font-family:JetBrains Mono,monospace;color:var(--rust)">ELIMINAR</b> para habilitar el botón.';
+  }
+  refreshSafeDeleteButton();
+}
+
+function checkSafeDeleteCaptcha(val){
+  const s = window._safeDeleteState;
+  if(!s) return;
+  s.captchaOK = (val||'').trim().toUpperCase() === 'ELIMINAR';
+  const helpEl = document.getElementById('safe-del-help');
+  if(helpEl && s.countdown === 0){
+    helpEl.innerHTML = s.captchaOK
+      ? '<span style="color:var(--sage)">✓ Listo para confirmar</span>'
+      : 'Escribí <b style="font-family:JetBrains Mono,monospace;color:var(--rust)">ELIMINAR</b> para habilitar el botón.';
+  }
+  refreshSafeDeleteButton();
+}
+
+function refreshSafeDeleteButton(){
+  const s = window._safeDeleteState;
+  const btn = document.getElementById('safe-del-confirm');
+  if(!s || !btn) return;
+  const canFire = s.countdown === 0 && s.captchaOK;
+  btn.disabled = !canFire;
+  btn.style.opacity = canFire ? '1' : '0.4';
+  btn.style.cursor = canFire ? 'pointer' : 'not-allowed';
+}
+
+function closeSafeDelete(){
+  if(window._safeDeleteTimer){ clearInterval(window._safeDeleteTimer); window._safeDeleteTimer = null; }
+  window._safeDeleteState = null;
+  closeModal();
+}
+
+function executeSafeDelete(){
+  const s = window._safeDeleteState;
+  if(!s) return;
+  if(s.countdown > 0 || !s.captchaOK) return;
+  const cb = s.onConfirm;
+  closeSafeDelete();
+  if(typeof cb === 'function') cb();
+}
+
 function openTastingModal(batchId){
   const b = db.batches.find(x=>x.id===batchId);
   if(!b) return;
@@ -6066,8 +6192,35 @@ function saveTasting(batchId){
 function discardBatch(id){
   const b = db.batches.find(x=>x.id===id);
   if(b.status==='discarded'){ b.status='in_progress'; saveDB(); render(); return; }
-  if(!confirm(`¿Descartar lote ${b.ref}?`)) return;
-  b.status='discarded'; saveDB(); render(); toast('Lote descartado');
+  if(!confirm(`¿Descartar lote ${b.ref}?\n\nQueda oculto pero recuperable. Para eliminarlo permanentemente usá "Eliminar permanentemente".`)) return;
+  b.status='discarded'; saveDB(); render(); toast('Lote descartado · recuperable');
+}
+
+/* v2.3+ — Hard delete with safe-delete modal (type + CAPTCHA + countdown) */
+function deleteBatchHard(id){
+  const b = db.batches.find(x=>x.id===id);
+  if(!b) return;
+  const pieceCount = b.pieces?.length || 0;
+  const logCount = b.pieces?.reduce((s,p)=>s+(p.weightLogs||[]).length,0) || 0;
+  const envCount = (b.envLog||[]).length;
+  const details = [
+    `${pieceCount} pieza${pieceCount===1?'':'s'}`,
+    `${logCount} registro${logCount===1?'':'s'} de peso`,
+    envCount>0 ? `${envCount} registros T/HR Govee` : null,
+    b.tasting ? 'ficha de cata' : null,
+    b.receiving ? 'PCC HACCP de recepción' : null,
+    'historial de etapas'
+  ].filter(Boolean).join(' · ');
+  openSafeDeleteModal({
+    kind: 'lote',
+    label: b.ref + ' — ' + b.typeName,
+    details: details + '.',
+    warning: 'Esta acción es irreversible. Si tenés un backup reciente (💾 Backups) podrás restaurarlo.',
+    onConfirm: ()=>{
+      db.batches = db.batches.filter(x=>x.id!==id);
+      saveDB(); goto('batches'); toast('Lote eliminado permanentemente');
+    }
+  });
 }
 
 /* Type editor actions */
@@ -6090,9 +6243,21 @@ function duplicateType(id){
   saveDB(); goto('type-editor',{typeId:nt.id}); toast('Tipo duplicado');
 }
 function deleteType(id){
-  if(!confirm('¿Eliminar este tipo? Los lotes existentes conservan su copia local de la receta.')) return;
-  db.types = db.types.filter(t=>t.id!==id);
-  saveDB(); goto('types'); toast('Tipo eliminado');
+  const t = db.types.find(x=>x.id===id);
+  if(!t) return;
+  const usedInBatches = db.batches.filter(b=>b.typeId===id).length;
+  openSafeDeleteModal({
+    kind: 'tipo (receta madre)',
+    label: t.name + ' — ' + t.ref,
+    details: `${(t.stages||[]).length} etapas · ${(t.stages||[]).reduce((s,st)=>s+(st.recipe||[]).length,0)} ingredientes en recetas.`,
+    warning: usedInBatches>0
+      ? `Hay ${usedInBatches} lote${usedInBatches===1?'':'s'} creado${usedInBatches===1?'':'s'} de este tipo — mantendrán su copia local de la receta y seguirán funcionando. El tipo madre desaparece de la biblioteca.`
+      : 'No hay lotes creados desde este tipo. La acción es irreversible salvo que lo recrees manualmente.',
+    onConfirm: ()=>{
+      db.types = db.types.filter(t=>t.id!==id);
+      saveDB(); goto('types'); toast('Tipo eliminado permanentemente');
+    }
+  });
 }
 function updateType(id, field, value){
   const t = db.types.find(x=>x.id===id); if(!t) return;
@@ -6236,9 +6401,24 @@ function toggleDensityField(selId, wrapId){
 }
 function deleteIngredient(id){
   const ing = db.ingredients.find(i=>i.id===id);
-  if(!confirm(`¿Eliminar "${ing.name}"?`)) return;
-  db.ingredients = db.ingredients.filter(i=>i.id!==id);
-  saveDB(); render();
+  if(!ing) return;
+  const usageRec = db.types.filter(t=>t.stages.some(s=>s.recipe?.some(r=>r.ingredient===ing.name))).length;
+  const usageBrine = db.types.filter(t=>t.stages.some(s=>s.brine && s.brine.saltIngredient===ing.name)).length;
+  const totalUsage = usageRec + usageBrine;
+  openSafeDeleteModal({
+    kind: 'ingrediente',
+    label: ing.name + (ing.category?` (${ing.category})`:''),
+    details: totalUsage>0
+      ? `Usado en ${totalUsage} receta${totalUsage===1?'':'s'} madre (${usageRec} ingrediente, ${usageBrine} salmuera).`
+      : 'Sin uso actual en recetas.',
+    warning: totalUsage>0
+      ? `Las recetas que lo usan quedarán con referencias rotas al ingrediente. Considerá reemplazarlo primero en las recetas antes de eliminarlo.`
+      : 'No está en uso. Acción irreversible salvo recrear.',
+    onConfirm: ()=>{
+      db.ingredients = db.ingredients.filter(i=>i.id!==id);
+      saveDB(); render(); toast('Ingrediente eliminado permanentemente');
+    }
+  });
 }
 
 
