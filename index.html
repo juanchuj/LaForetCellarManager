@@ -2945,6 +2945,9 @@ function viewAnalytics(){
         <div class="eyebrow">v2.3 · análisis multi-lote</div>
         <h1>Analytics</h1>
       </div>
+      <div class="actions">
+        <button class="btn sm" onclick="openHistoricalImport()" data-tt="Importar lotes históricos desde JSON (merge, no reemplaza)">⤒ Importar históricos</button>
+      </div>
     </div>
 
     ${renderYieldRealVsExpected(typesWithData)}
@@ -3394,6 +3397,137 @@ function downloadBackup(){
   a.download = `laforet_backup_${date}.json`;
   a.click();
   toast('Backup descargado · '+date);
+}
+
+/* v2.5+ — Import historical batches from a JSON file (merge, not replace).
+   Backups current db first, then adds batches to db.batches, skipping any ref
+   that already exists (idempotent). Resolves typeId by name if the ID doesn't
+   match the current db.types. */
+function openHistoricalImport(){
+  // Create hidden file input on the fly
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.json';
+  inp.style.display = 'none';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if(!f){ inp.remove(); return; }
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const data = JSON.parse(ev.target.result);
+        const incoming = Array.isArray(data) ? data : (data.batches || []);
+        if(!incoming.length){ toast('No se encontraron lotes en el JSON'); inp.remove(); return; }
+        previewHistoricalImport(incoming);
+      }catch(err){ toast('JSON inválido: '+err.message); }
+      inp.remove();
+    };
+    reader.readAsText(f);
+  });
+  inp.click();
+}
+
+function previewHistoricalImport(incoming){
+  // Resolve each batch's typeId by: existing id, then by name/ref fuzzy
+  const existingRefs = new Set(db.batches.map(b=>b.ref));
+  const resolved = [];
+  const unresolved = [];
+  const duplicates = [];
+  incoming.forEach(b=>{
+    if(existingRefs.has(b.ref)){
+      duplicates.push(b);
+      return;
+    }
+    let type = db.types.find(t=>t.id===b.typeId);
+    if(!type) type = db.types.find(t=>t.name===b.typeName);
+    if(!type) type = db.types.find(t=>t.ref===b.typeRef);
+    if(!type){
+      // Fuzzy: first word match
+      const bRoot = (b.typeName||'').split(' ')[0].toLowerCase();
+      type = db.types.find(t=>t.name.toLowerCase().startsWith(bRoot));
+    }
+    if(!type){ unresolved.push(b); return; }
+    // Normalize: set resolved typeId
+    const copy = JSON.parse(JSON.stringify(b));
+    copy.typeId = type.id;
+    copy.typeName = type.name;
+    copy.typeRef = type.ref;
+    resolved.push(copy);
+  });
+
+  const byType = {};
+  resolved.forEach(b=>{ byType[b.typeName] = (byType[b.typeName]||0)+1; });
+
+  showModal(`
+    <div class="modal wide">
+      <div class="modal-head"><h2>Importar lotes históricos</h2><button class="btn ghost" onclick="closeModal()">✕</button></div>
+
+      <div class="grid grid-3" style="margin-bottom:16px">
+        <div class="stat"><div class="k">Importables</div><div class="v mono" style="color:var(--sage)">${resolved.length}</div><div class="note">lotes mapeados a tipos existentes</div></div>
+        <div class="stat"><div class="k">Duplicados</div><div class="v mono" style="color:var(--amber)">${duplicates.length}</div><div class="note">ref ya existe · se omiten</div></div>
+        <div class="stat"><div class="k">Sin mapeo</div><div class="v mono" style="color:${unresolved.length?'var(--rust)':'var(--muted)'}">${unresolved.length}</div><div class="note">tipo no encontrado · se omiten</div></div>
+      </div>
+
+      ${resolved.length ? `
+        <div class="divider-lbl">Distribución por tipo</div>
+        <table style="width:100%;margin-bottom:14px">
+          <thead><tr><th>Tipo</th><th class="r">N lotes</th></tr></thead>
+          <tbody>
+            ${Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
+              <tr><td>${escapeHtml(t)}</td><td class="r mono">${n}</td></tr>
+            `).join('')}
+          </tbody>
+        </table>
+      ` : ''}
+
+      ${unresolved.length ? `
+        <div class="divider-lbl">Lotes sin tipo (serán omitidos)</div>
+        <div class="tiny" style="color:var(--muted);margin-bottom:10px">Los siguientes productos del JSON no tienen tipo correspondiente en tu biblioteca actual. Creá el tipo primero o editá el JSON para apuntar al typeId correcto:</div>
+        <ul class="tiny" style="color:var(--rust);margin-bottom:14px">
+          ${[...new Set(unresolved.map(b=>b.typeName))].slice(0,10).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}
+        </ul>
+      ` : ''}
+
+      <div style="background:var(--bg-2);border:1px dashed var(--line);border-radius:4px;padding:10px 14px;margin-bottom:14px">
+        <div class="tiny" style="color:var(--amber);font-weight:600;margin-bottom:4px">Backup automático antes de importar</div>
+        <div class="tiny" style="color:var(--muted)">Se creará un snapshot de tu DB actual accesible desde 💾 Backups. Si algo no sale como esperás podés restaurar.</div>
+      </div>
+
+      <div class="foot">
+        <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn primary" ${resolved.length?'':'disabled style="opacity:0.4;cursor:not-allowed"'} onclick='commitHistoricalImport(${JSON.stringify(resolved).replace(/'/g,"\\x27")})'>
+          Importar ${resolved.length} lote${resolved.length===1?'':'s'}
+        </button>
+      </div>
+    </div>
+  `);
+}
+
+function commitHistoricalImport(resolved){
+  if(!resolved || !resolved.length){ return; }
+  try{
+    // Force a backup NOW regardless of day
+    try{
+      const key = BACKUP_PREFIX + toISODate(new Date()) + '-pre-import';
+      localStorage.setItem(key, JSON.stringify({ ts: new Date().toISOString(), db }));
+    }catch(e){ console.error('pre-import backup failed', e); }
+    // Append batches
+    let added = 0;
+    resolved.forEach(b=>{
+      // Ensure id uniqueness
+      if(!b.id) b.id = uid('bat');
+      if(db.batches.some(x=>x.id===b.id)) b.id = uid('bat');
+      db.batches.push(b);
+      added++;
+    });
+    saveDB();
+    closeModal();
+    render();
+    toast(`✓ ${added} lotes históricos importados · backup pre-import guardado`);
+  }catch(e){
+    toast('Error al importar: '+e.message);
+  }
 }
 
 /* Open backup manager modal */
