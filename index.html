@@ -271,9 +271,10 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button{opacity:0.4}
 
-/* Consistent focus ring for keyboard navigation */
-:focus-visible{outline:2px solid var(--brand);outline-offset:1px;border-radius:3px}
-button:focus-visible,.btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+/* Consistent focus ring for keyboard navigation (subtle but visible) */
+:focus-visible{outline:1.5px solid var(--brand);outline-offset:1px;border-radius:3px}
+button:focus-visible,.btn:focus-visible{outline:1.5px solid var(--brand);outline-offset:1px}
+.sidebar-toggle:focus-visible{outline:none;background:var(--brand);color:var(--bg);border-color:var(--brand)}
 
 /* Toast more legible */
 .toast{box-shadow:0 10px 40px rgba(0,0,0,0.4)}
@@ -2927,19 +2928,7 @@ function viewAnalytics(){
     return { type:t, stats, batches, n: batches.length };
   }).filter(x => x.n > 0);
 
-  if(typesWithData.length === 0){
-    return `
-      <div class="page-head">
-        <div><div class="eyebrow">v2.3</div><h1>Analytics Multi-Lote</h1></div>
-      </div>
-      <div class="empty">
-        <p>Aún no hay lotes terminados.</p>
-        <p class="tiny" style="color:var(--muted)">La estadística multi-lote necesita al menos 3-4 lotes del mismo tipo terminados para dar insights útiles.</p>
-      </div>
-    `;
-  }
-
-  return `
+  const pageHead = `
     <div class="page-head">
       <div>
         <div class="eyebrow">v2.3 · análisis multi-lote</div>
@@ -2949,6 +2938,24 @@ function viewAnalytics(){
         <button class="btn sm" onclick="openHistoricalImport()" data-tt="Importar lotes históricos desde JSON (merge, no reemplaza)">⤒ Importar históricos</button>
       </div>
     </div>
+  `;
+
+  if(typesWithData.length === 0){
+    return `
+      ${pageHead}
+      <div class="card" style="text-align:center;padding:40px 24px">
+        <h3 style="color:var(--brand);margin-bottom:12px">Aún no hay lotes terminados</h3>
+        <p class="tiny" style="color:var(--muted);max-width:480px;margin:0 auto 20px">La estadística multi-lote necesita al menos 3-4 lotes del mismo tipo terminados para dar insights útiles.</p>
+        <div style="padding:14px 18px;background:var(--bg-2);border:1px dashed var(--line);border-radius:4px;max-width:520px;margin:0 auto;text-align:left">
+          <div class="tiny" style="color:var(--amber);font-weight:600;margin-bottom:4px">¿Tenés data histórica en Excel?</div>
+          <div class="tiny" style="color:var(--muted)">Usá el botón <b style="color:var(--brand)">⤒ Importar históricos</b> arriba a la derecha para cargar tus lotes anteriores desde un JSON. Analytics se activa inmediatamente.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    ${pageHead}
 
     ${renderYieldRealVsExpected(typesWithData)}
     ${renderCorrelationsSection(typesWithData)}
