@@ -3691,6 +3691,35 @@ function nextRefFor(typeRef){
   return typeRef + String(n).padStart(3,'0');
 }
 
+/* Next available numeric sequence for a type (returns the N, not the full ref) */
+function nextSeqFor(typeRef){
+  const used = db.batches.filter(b=>b.typeRef===typeRef).map(b=>parseInt((b.ref||'').replace(typeRef,'')||'0',10)).filter(x=>!isNaN(x));
+  return used.length ? Math.max(...used)+1 : 0;
+}
+
+/* Compute a ref from typeRef + lot string.
+   Normalizes lot: strips non-digits, pads to 3. If lot is empty or non-numeric,
+   returns null so callers can fall back to nextRefFor. */
+function refFromLot(typeRef, lot){
+  if(!typeRef) return null;
+  const digits = String(lot||'').replace(/\D/g,'');
+  if(!digits) return null;
+  return typeRef + digits.padStart(3,'0');
+}
+
+/* Preview ref for a batch creation/edit based on current nb inputs */
+function previewRef(nb, type, excludeBatchId){
+  if(!type) return '—';
+  const fromLot = refFromLot(type.ref, nb.lot);
+  if(fromLot){
+    // Check collision with existing batches (excluding self in edit mode)
+    const collision = db.batches.some(b => b.ref === fromLot && b.id !== excludeBatchId);
+    return collision ? fromLot + ' ⚠ ya existe' : fromLot;
+  }
+  // No lot provided — use next available sequence
+  return nextRefFor(type.ref);
+}
+
 function stageColor(kind){ return `var(--s-${kind==='Curado'?'cur':kind==='Salmuera'?'sal':kind==='Salazon'?'slz':kind==='Adobado'?'ado':kind==='Fermentado'?'fer':kind==='Secado'?'sec':kind==='Balanceo'?'bal':kind==='Ahumado'?'ahum':'mad'})`; }
 
 /* Compute total estimated duration for a type given a piece thickness (for Curado EB) */
@@ -6012,11 +6041,11 @@ function renderNewBatchModal(){
             ${db.types.map(t=>`<option value="${t.id}" ${nb.typeId===t.id?'selected':''}>${t.name}</option>`).join('')}
           </select>
         </div>
-        <div><label>Lote (opcional)</label><input value="${escapeAttr(nb.lot)}" oninput="window._newBatch.lot=this.value" placeholder="ej: 001"></div>
+        <div><label>Lote (n° que define la Ref)</label><input value="${escapeAttr(nb.lot)}" oninput="window._newBatch.lot=this.value" onchange="renderNewBatchModal()" placeholder="ej: 001 · se auto-asigna si lo dejás vacío"></div>
         <div><label>Fecha inicio</label><input type="date" value="${nb.startedAt}" onchange="window._newBatch.startedAt=this.value;renderNewBatchModal()"></div>
       </div>
       <div class="row" style="margin-top:12px">
-        <div style="flex:1"><label>Ref auto-asignada</label><div class="mono" style="font-size:16px;color:var(--brand)">${type?nextRefFor(type.ref):'—'}</div></div>
+        <div style="flex:1"><label>Ref ${nb.editingBatchId?'actual':'auto-asignada'}</label><div class="mono" style="font-size:16px;color:var(--brand)">${previewRef(nb, type, nb.editingBatchId)}</div><div class="tiny" style="color:var(--muted);margin-top:2px">${nb.lot ? 'Ref = tipo + lote. Si cambiás el lote, la Ref se actualiza.' : 'Dejá el lote vacío para usar la próxima secuencia disponible.'}</div></div>
         <div style="flex:2"><label>Yield objetivo % (${type?.yield.min}–${type?.yield.max})</label>
           <input type="number" min="30" max="90" step="1" value="${nb.targetYield}" oninput="window._newBatch.targetYield=+this.value" onchange="renderNewBatchModal()">
           <div class="tiny">Peso final objetivo: <span class="mono">${fmtG((nb.targetYield/100)*totalWeight)}</span> (pierde ${100-nb.targetYield}%)</div>
@@ -6338,6 +6367,20 @@ function createBatch(){
   if(nb.editingBatchId){
     const b = db.batches.find(x=>x.id===nb.editingBatchId);
     if(b){
+      // Sync ref ← lot change (if lot has numeric content and ref would change)
+      const newRef = refFromLot(type.ref, nb.lot) || b.ref;
+      if(newRef !== b.ref){
+        const collision = db.batches.some(x => x.ref === newRef && x.id !== b.id);
+        if(collision){ toast('Ya existe un lote con ref '+newRef+' · usá otro número'); return; }
+        // Rename piece codes that follow the old ref+letter pattern
+        const oldRef = b.ref;
+        b.pieces.forEach((p,i)=>{
+          if(!p.code || p.code.startsWith(oldRef)){
+            p.code = newRef + String.fromCharCode(65+i);
+          }
+        });
+        b.ref = newRef;
+      }
       b.lot = nb.lot;
       b.notes = nb.notes;
       b.targetYield = nb.targetYield;
@@ -6399,7 +6442,18 @@ function createBatch(){
     }
   }
 
-  const ref = nextRefFor(type.ref);
+  // Ref derived from user-entered lot if numeric; otherwise next available sequence
+  let ref;
+  const fromLot = refFromLot(type.ref, nb.lot);
+  if(fromLot){
+    const collision = db.batches.some(x => x.ref === fromLot);
+    if(collision){ toast('Ya existe un lote con ref '+fromLot+' · usá otro lote o dejalo vacío'); return; }
+    ref = fromLot;
+  } else {
+    ref = nextRefFor(type.ref);
+    // Auto-fill lot from ref sequence if user left it blank
+    if(!nb.lot){ nb.lot = ref.replace(type.ref,''); }
+  }
   const maxThickness = Math.max(...nb.pieces.map(p=>+p.thickness||0), 1);
   const shape = nb.pieces[0]?.shape || 'tubular';
   const plus20 = nb.ebPlus20 !== false;
