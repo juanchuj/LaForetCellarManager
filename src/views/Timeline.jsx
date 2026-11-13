@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ChartGantt, Crosshair, Plus } from 'lucide-react';
 import { useDB, core } from '@/lib/store';
 import { navigate } from '@/lib/router';
@@ -10,17 +10,19 @@ import { StageDot } from '@/components/stage-dot';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const DAY = 86400000;
-const ZOOM = { semanas: 26, meses: 12, trimestre: 6 };
+const ZOOM = { ajustar: 0, semanas: 26, meses: 12 };
+const PERIOD = { 3: 'Últimos 3 meses', 6: 'Últimos 6 meses', 12: 'Último año', all: 'Todo' };
 const LABEL_W = 232;
 
 /* Same segment rules as v4.4.3: done → real; in progress → real until today + projected;
    not started → projected; past expected end and not done → overdue. */
 function segmentsFor(b, today) {
   const out = [];
-  for (const s of b.stages) {
+  for (const s of b.stages || []) {
     const start = new Date(s.startedAt || b.startedAt);
     if (s.done) out.push({ s, kind: 'real', start, end: new Date(s.actualEnd || s.expectedEnd || start) });
     else {
@@ -30,24 +32,41 @@ function segmentsFor(b, today) {
       else { out.push({ s, kind: 'real', start, end: today }); out.push({ s, kind: 'proj', start: today, end: exp, cont: true }); }
     }
   }
-  return out;
+  // historical/imported batches can carry missing or malformed dates: skip those segments
+  return out.filter((g) => Number.isFinite(+g.start) && Number.isFinite(+g.end) && +g.end >= +g.start);
 }
 
 export function Timeline() {
   const db = useDB();
-  const [zoom, setZoom] = useState('meses');
+  const [zoom, setZoom] = useState('ajustar');
   const [scope, setScope] = useState('activos');
+  const [period, setPeriod] = useState('6');
   const scroller = useRef(null);
+  const [avail, setAvail] = useState(900);
   const today = new Date();
 
-  const batches = db.batches
-    .filter((b) => (scope === 'activos' ? b.status === 'in_progress' : b.status !== 'draft'))
-    .sort((a, b) => new Date(a.startedAt) - new Date(b.startedAt));
+  // track the width available for the bars, so "Ajustar" can fit the whole range
+  useEffect(() => {
+    const el = scroller.current; if (!el) return;
+    const ro = new ResizeObserver(() => setAvail(Math.max(300, el.clientWidth - LABEL_W - 2)));
+    ro.observe(el); return () => ro.disconnect();
+  }, []);
+
+  const endOf = (b) => { const s = (b.stages || [])[(b.stages || []).length - 1]; return new Date(s?.actualEnd || s?.expectedEnd || s?.startedAt || b.startedAt); };
+  const since = period === 'all' ? null : new Date(+today - +period * 30.44 * DAY);
+  const active = db.batches.filter((b) => b.status === 'in_progress').sort((a, b) => new Date(a.startedAt) - new Date(b.startedAt));
+  // in-progress always first; finished/discarded after, most recent first, limited to the period
+  const others = scope === 'activos' ? [] : db.batches
+    .filter((b) => b.status !== 'in_progress' && b.status !== 'draft' && (!since || endOf(b) >= since))
+    .sort((a, b) => endOf(b) - endOf(a));
+  const batches = [...active, ...others];
+  const hiddenOld = scope === 'todos' && since ? db.batches.filter((b) => b.status !== 'in_progress' && b.status !== 'draft' && endOf(b) < since).length : 0;
 
   const { minD, days, months, weeks } = useMemo(() => {
     if (!batches.length) return { minD: today, days: 0, months: [], weeks: [] };
-    const starts = batches.map((b) => +new Date(b.startedAt));
-    const ends = batches.map((b) => { const s = b.stages[b.stages.length - 1]; return +new Date(s.actualEnd || s.expectedEnd || s.startedAt || b.startedAt); });
+    const ok = (n) => Number.isFinite(n);
+    const starts = batches.map((b) => +new Date(b.startedAt)).filter(ok);
+    const ends = batches.map((b) => +endOf(b)).filter(ok);
     const minD = new Date(Math.min(...starts, +today) - 5 * DAY);
     const maxD = new Date(Math.max(...ends, +today + 14 * DAY) + 7 * DAY);
     const days = (maxD - minD) / DAY;
@@ -57,10 +76,11 @@ export function Timeline() {
     while (w < maxD) { weeks.push(new Date(w)); w.setDate(w.getDate() + 7); }
     return { minD, days, months, weeks };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [db.batches.length, scope, batches.map((b) => b.id + b.stages.map((s) => s.done).join()).join()]);
+  }, [db.batches.length, scope, period, batches.map((b) => b.id + b.stages.map((s) => s.done).join()).join()]);
 
-  const px = ZOOM[zoom];
-  const width = Math.max(720, days * px);
+  const fitPx = days ? avail / days : 1;
+  const px = zoom === 'ajustar' ? fitPx : Math.max(ZOOM[zoom], fitPx);
+  const width = zoom === 'ajustar' ? avail : Math.max(avail, days * px);
   const x = (d) => ((+new Date(d) - +minD) / DAY) * px;
 
   const scrollToToday = (smooth) => {
@@ -68,7 +88,7 @@ export function Timeline() {
     el.scrollTo({ left: Math.max(0, x(today) - (el.clientWidth - LABEL_W) * 0.35), behavior: smooth ? 'smooth' : 'auto' });
   };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useLayoutEffect(() => scrollToToday(false), [zoom, scope, batches.length]);
+  useLayoutEffect(() => scrollToToday(false), [zoom, scope, period, batches.length, avail]);
 
   const stagesPresent = [...new Set(batches.flatMap((b) => b.stages.map((s) => s.kind)))];
 
@@ -90,12 +110,18 @@ export function Timeline() {
         </Tabs>
         <Tabs value={zoom} onValueChange={setZoom}>
           <TabsList>
-            <TabsTrigger value="semanas">Semanas</TabsTrigger>
+            <TabsTrigger value="ajustar">Ajustar</TabsTrigger>
             <TabsTrigger value="meses">Meses</TabsTrigger>
-            <TabsTrigger value="trimestre">Trimestre</TabsTrigger>
+            <TabsTrigger value="semanas">Semanas</TabsTrigger>
           </TabsList>
         </Tabs>
-        <Button variant="outline" size="sm" onClick={() => scrollToToday(true)}><Crosshair /> Hoy</Button>
+        {scope === 'todos' && (
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger size="sm" className="w-44" aria-label="Período"><SelectValue /></SelectTrigger>
+            <SelectContent>{Object.entries(PERIOD).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
+          </Select>
+        )}
+        {zoom !== 'ajustar' && <Button variant="outline" size="sm" onClick={() => scrollToToday(true)}><Crosshair /> Hoy</Button>}
         <div className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
           {stagesPresent.map((k) => <span key={k} className="inline-flex items-center gap-1.5"><StageDot kind={k} />{k}</span>)}
           <span className="inline-flex items-center gap-1.5"><span className="seg-proj inline-block h-2.5 w-5 rounded-[3px]" style={{ '--seg': 'var(--muted-foreground)' }} />Proyectado</span>
@@ -103,19 +129,20 @@ export function Timeline() {
         </div>
       </div>
 
-      {batches.length === 0 ? (
-        <EmptyState icon={ChartGantt} title="Sin lotes activos">Cuando inicies un lote, sus etapas aparecen aquí.</EmptyState>
-      ) : (
-        <Card className="gap-0 overflow-hidden py-0">
-          <div ref={scroller} className="overflow-x-auto">
+      {batches.length === 0 && (
+        <EmptyState icon={ChartGantt} title={scope === 'activos' ? 'Sin lotes activos' : 'Sin lotes en este período'}>{scope === 'activos' ? 'Cuando inicies un lote, sus etapas aparecen aquí.' : 'Probá con un período más largo.'}</EmptyState>
+      )}
+      {(
+        <Card className={cn('gap-0 overflow-hidden py-0', batches.length === 0 && 'hidden')}>
+          <div ref={scroller} className="overflow-x-auto overflow-y-hidden">
             <div style={{ width: width + LABEL_W }} className="relative">
               {/* scale */}
               <div className="sticky top-0 z-20 flex h-10 border-b bg-card/95 backdrop-blur">
                 <div style={{ width: LABEL_W }} className="sticky left-0 z-10 flex shrink-0 items-center border-r bg-card px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Lote</div>
                 <div className="relative flex-1">
-                  {months.map((m) => (
-                    <span key={+m} className="absolute top-0 flex h-full items-center border-l border-border pl-2 font-mono text-[11px] text-muted-foreground" style={{ left: x(m) }}>
-                      {m.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' })}
+                  {months.filter((m) => x(m) < width - 44).map((m) => (
+                    <span key={+m} className="absolute top-0 flex h-full items-center whitespace-nowrap border-l border-border pl-2 font-mono text-[11px] text-muted-foreground" style={{ left: x(m) }}>
+                      {px * 30 < 70 ? m.toLocaleDateString('es-CO', { month: 'narrow' }) : m.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' })}
                     </span>
                   ))}
                   <span className="absolute top-1 -translate-x-1/2 rounded-full bg-gold px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-white" style={{ left: x(today) }}>hoy</span>
@@ -124,7 +151,7 @@ export function Timeline() {
               {/* rows */}
               <div className="relative">
                 <div aria-hidden className="pointer-events-none absolute inset-y-0" style={{ left: LABEL_W, width }}>
-                  {weeks.map((w) => <span key={+w} className="absolute inset-y-0 border-l border-dashed border-border/60" style={{ left: x(w) }} />)}
+                  {px * 7 >= 14 && weeks.map((w) => <span key={+w} className="absolute inset-y-0 border-l border-dashed border-border/60" style={{ left: x(w) }} />)}
                   {months.map((m) => <span key={+m} className="absolute inset-y-0 border-l border-border" style={{ left: x(m) }} />)}
                   <span className="absolute inset-y-0 z-10 w-0.5 -translate-x-1/2 bg-gold" style={{ left: x(today) }} />
                 </div>
@@ -171,6 +198,7 @@ export function Timeline() {
           </div>
         </Card>
       )}
+      {hiddenOld > 0 && <p className="mt-3 text-xs text-muted-foreground">{hiddenOld} lote{hiddenOld === 1 ? '' : 's'} terminado{hiddenOld === 1 ? '' : 's'} antes de este período no se muestra{hiddenOld === 1 ? '' : 'n'}. Elegí «Todo» para verlos.</p>}
     </>
   );
 }

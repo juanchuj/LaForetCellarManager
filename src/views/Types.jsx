@@ -53,6 +53,8 @@ export function Types() {
 }
 
 /* ── Editor de receta ──────────────────────────────────── */
+/** Stages done vacuum-packed: no relative-humidity requirement. */
+export const VACUUM = new Set(['Balanceo']);
 const updStage = (t, i, field, value) => { t.stages[i][field] = value; core.saveDB(); };
 
 export function TypeEditor({ id }) {
@@ -255,14 +257,15 @@ function StageEditor({ t, s, i }) {
         {s.kind === 'Ahumado' && <SmokeEditor t={t} s={s} i={i} />}
 
         {meta.env && (
-          <div><SectionLabel>Ambiente</SectionLabel>
+          <div><SectionLabel>{VACUUM.has(s.kind) ? 'Temperatura' : 'Ambiente'}</SectionLabel>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {[['tMin', 'T mín', '°C', '0.5'], ['tMax', 'T máx', '°C', '0.5'], ['hMin', 'HR mín', '%', '1'], ['hMax', 'HR máx', '%', '1']].map(([k, l, u, st]) => (
+              {[['tMin', 'T mín', '°C', '0.5'], ['tMax', 'T máx', '°C', '0.5'], ['hMin', 'HR mín', '%', '1'], ['hMax', 'HR máx', '%', '1']].filter(([k]) => !(VACUUM.has(s.kind) && k[0] === 'h')).map(([k, l, u, st]) => (
                 <Field key={k} label={l}><UnitInput unit={u} step={st} defaultValue={s.env?.[k] ?? ''} onChange={(e) => core.updateEnv(t.id, i, k, +e.target.value)} /></Field>
               ))}
             </div>
           </div>
         )}
+        {meta.env && VACUUM.has(s.kind) && <p className="-mt-3 text-xs text-muted-foreground">Al vacío: la humedad de la cava no influye, así que no tiene rango de HR.</p>}
         {meta.ph && (
           <div><SectionLabel>Control de pH</SectionLabel>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

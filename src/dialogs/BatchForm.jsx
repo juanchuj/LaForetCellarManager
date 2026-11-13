@@ -18,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const STEPS = ['Tipo', 'Recepción', 'Piezas', 'Curado', 'Resumen'];
+const STEPS = ['Tipo', 'Recepción', 'Piezas', 'Proceso', 'Resumen'];
 const ACCEPT = [['pending', '— seleccionar —'], ['accept-with-note', 'Aceptar con nota'], ['accept-conditional', 'Aceptar condicional (procesar hoy)'], ['reject', 'Rechazar lote']];
 
 /* Same thresholds as v4.4.3 renderReceivingSection */
@@ -88,8 +88,6 @@ export function BatchFormDialog() {
 
 function StepType({ db, nb, type, upd, editing, totalG }) {
   const hist = type ? core.historicalYieldStats(type.id) : { n: 0 };
-  const fick = type ? core.evaluateFickSalt(nb, type) : null;
-  const FICK = { excess: ['info', Info], ok: ['success', CircleCheck], warn: ['warning', TriangleAlert], fail: ['danger', OctagonAlert] };
   return (
     <div className="grid gap-5">
       <div className="grid gap-4 sm:grid-cols-3">
@@ -116,7 +114,6 @@ function StepType({ db, nb, type, upd, editing, totalG }) {
                 <Button type="button" size="sm" variant="ghost" className="h-6 px-2 text-gold-ink" onClick={() => upd((x) => { x.targetYield = Math.round(hist.mean); })}>Usar {Math.round(hist.mean)}%</Button></div>)}
         </div>
       </div>
-      {fick && (() => { const [variant, Icon] = FICK[fick.status]; return <Alert variant={variant}><Icon /><AlertTitle>Penetración de sal (Fick)</AlertTitle><AlertDescription>{String(fick.msg).replace(/^[⚠✓ℹ]\s*/, '')}</AlertDescription></Alert>; })()}
     </div>
   );
 }
@@ -218,6 +215,8 @@ function StepCure({ nb, type, upd, maxT, shape, totalG }) {
         </div>
       </div>
 
+      <SaltPenetration nb={nb} type={type} maxT={maxT} shape={shape} rows={rows} />
+
       {profile && (
         <div>
           <SectionLabel>Penetración del humo (Fick)</SectionLabel>
@@ -233,6 +232,34 @@ function StepCure({ nb, type, upd, maxT, shape, totalG }) {
         <ScaledRecipes type={type} totalKg={totalG / 1000} pieces={nb.pieces} overrides={nb.saltOverrides} />
       </div>
     </div>
+  );
+}
+
+/* Salt reaching the centre (Fick diffusion), compared against THIS batch's real curing days.
+ * v4.4.3 compared the recipe's fixed Curado days and ignored the Equilibrium Brine duration. */
+function SaltPenetration({ nb, type, maxT, shape, rows }) {
+  const cur = type.stages.find((s) => s.kind === 'Curado');
+  if (!cur) return null;
+  const tempC = cur.env?.T ?? 5;               // same inputs as v4.4.3 evaluateFickSalt
+  const need = core.fickSaltPenetrationDays({ thicknessCm: maxT, shape, tempC, fatPct: type.fatPct ?? 20 });
+  if (!need) return null;
+  const curDays = rows.find((r) => r.kind === 'Curado')?.d ?? cur.dEst;
+  // salt keeps equalising after the curing bag: up to the end of Secado + Balanceo
+  const iEnd = Math.max(rows.findLastIndex((r) => r.kind === 'Secado' || r.kind === 'Balanceo'), rows.findIndex((r) => r.kind === 'Curado'));
+  const untilEq = rows.slice(rows.findIndex((r) => r.kind === 'Curado'), iEnd + 1).reduce((s2, r) => s2 + r.d, 0);
+  const [variant, Icon, title, text] = curDays >= need
+    ? ['success', CircleCheck, 'La sal llega al centro durante el curado', `Con ${fmt(curDays, 1)} d de curado alcanza; el modelo estima ${Math.round(need)} d para esta pieza.`]
+    : untilEq >= need
+      ? ['info', Info, 'La sal termina de igualarse después del curado', `El curado dura ${fmt(curDays, 1)} d y el modelo estima ${Math.round(need)} d para que la sal llegue al centro. Como la sal sigue igualándose durante el secado y el balanceo (${Math.round(untilEq)} d en total), es lo normal en piezas gruesas.`]
+      : ['warning', TriangleAlert, 'El centro podría quedar con poca sal', `El modelo estima ${Math.round(need)} d para que la sal llegue al centro, pero hasta el fin del ${rows.some((r) => r.kind === 'Balanceo') ? 'balanceo' : 'secado'} hay ${Math.round(untilEq)} d. Considerá un curado más largo o piezas más delgadas.`];
+  return (
+    <Alert variant={variant}>
+      <Icon /><AlertTitle className="line-clamp-none">{title}</AlertTitle>
+      <AlertDescription>
+        <p>{text}</p>
+        <p className="text-xs opacity-80">Estimación por difusión (ley de Fick) con la pieza más gruesa: {maxT} cm, {shape === 'flat' ? 'plana' : 'tubular'}, a {tempC} °C. Es orientativa y conservadora; no reemplaza tu experiencia con el corte.</p>
+      </AlertDescription>
+    </Alert>
   );
 }
 

@@ -4,7 +4,7 @@ import { useDB, core } from '@/lib/store';
 import { openDialog } from '@/lib/dialogs';
 import { useRoute } from '@/lib/router';
 
-export const APP_VERSION = 'v5.2.0';
+export const APP_VERSION = 'v5.2.1';
 
 export const NAV = [
   { key: 'panel', href: '/', label: 'Panel', icon: LayoutDashboard, count: (db) => db.batches.filter((b) => b.status === 'in_progress').length },

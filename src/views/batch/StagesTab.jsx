@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { LEVEL_VARIANT } from './shared';
+import { VACUUM } from '@/views/Types';
 
 export function StagesTab({ b }) {
   const curIdx = b.stages.findIndex((x) => !x.done);
@@ -52,7 +53,7 @@ function StageCard({ b, s, idx, current }) {
       {s.kind === 'Ahumado' && s.smoke && <SmokePanel s={s} />}
       {s.env && (
         <div><SectionLabel>Ambiente objetivo</SectionLabel>
-          <div className="flex flex-wrap gap-2"><Badge variant="info" className="h-7 px-2.5"><Thermometer />{s.env.tMin}–{s.env.tMax} °C</Badge><Badge variant="info" className="h-7 px-2.5"><Droplets />{s.env.hMin}–{s.env.hMax} % HR</Badge></div>
+          <div className="flex flex-wrap items-center gap-2"><Badge variant="info" className="h-7 px-2.5"><Thermometer />{s.env.tMin}–{s.env.tMax} °C</Badge>{VACUUM.has(s.kind) ? <span className="text-xs text-muted-foreground">al vacío · sin control de humedad</span> : <Badge variant="info" className="h-7 px-2.5"><Droplets />{s.env.hMin}–{s.env.hMax} % HR</Badge>}</div>
         </div>
       )}
       {stg.ph && s.ph && <PhPanel b={b} s={s} idx={idx} />}

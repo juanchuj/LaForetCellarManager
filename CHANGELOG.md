@@ -1,5 +1,21 @@
 # Changelog
 
+## v5.2.1 — 2026-11-13 · Correcciones
+
+### Vista de cava
+- Nuevo zoom **Ajustar** (por defecto): todo el rango entra en el ancho, sin scroll horizontal. Sin scroll vertical con pocas filas.
+- **Incluir terminados**: los lotes en proceso van siempre primero y los terminados después, del más reciente al más antiguo. Hay un filtro de período (3, 6 o 12 meses, o todo) y se indica cuántos quedaron fuera.
+- Los lotes importados con etapas o fechas incompletas ya no dejan la vista en blanco.
+- Las etiquetas de mes ya no se parten al borde.
+
+### Nuevo lote
+- El paso 4 se llama **Proceso** (incluye todas las etapas, no solo el curado).
+- El aviso de penetración de sal (Fick) ya no aparece en el paso 1 con la pieza por defecto. Ahora está en Proceso, junto al cronograma, y explicado en lenguaje claro.
+- Corrección heredada de v4.4.3: Fick se comparaba con los días fijos de la receta e ignoraba la duración real del Curado por Equilibrium Brine. Ahora usa los días de curado de este lote y considera que la sal sigue igualándose durante el secado y el balanceo.
+
+### Recetas
+- **Balanceo** (al vacío) ya no tiene rango de humedad: solo temperatura. En el lote se muestra «al vacío · sin control de humedad». Ningún cálculo usaba esos valores.
+
 ## v5.2.0 — 2026-11-12 · Fase 3 (migración completa)
 
 ### Nuevo
