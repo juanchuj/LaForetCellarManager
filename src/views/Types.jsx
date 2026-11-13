@@ -265,7 +265,7 @@ function StageEditor({ t, s, i }) {
             </div>
           </div>
         )}
-        {meta.env && VACUUM.has(s.kind) && <p className="-mt-3 text-xs text-muted-foreground">Al vacío: la humedad de la cava no influye, así que no tiene rango de HR.</p>}
+        {meta.env && VACUUM.has(s.kind) && <p className="-mt-3 text-xs text-muted-foreground">Balanceo de piezas empacadas al vacío. No requiere HR específica.</p>}
         {meta.ph && (
           <div><SectionLabel>Control de pH</SectionLabel>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

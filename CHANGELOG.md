@@ -14,7 +14,7 @@
 - Corrección heredada de v4.4.3: Fick se comparaba con los días fijos de la receta e ignoraba la duración real del Curado por Equilibrium Brine. Ahora usa los días de curado de este lote y considera que la sal sigue igualándose durante el secado y el balanceo.
 
 ### Recetas
-- **Balanceo** (al vacío) ya no tiene rango de humedad: solo temperatura. En el lote se muestra «al vacío · sin control de humedad». Ningún cálculo usaba esos valores.
+- **Balanceo** (al vacío) ya no tiene rango de humedad: solo temperatura, con la nota «Balanceo de piezas empacadas al vacío. No requiere HR específica.». En el lote se muestra «Empacado al vacío · no requiere HR específica». Ningún cálculo usaba esos valores.
 
 ## v5.2.0 — 2026-11-12 · Fase 3 (migración completa)
 

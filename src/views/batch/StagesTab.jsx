@@ -53,7 +53,7 @@ function StageCard({ b, s, idx, current }) {
       {s.kind === 'Ahumado' && s.smoke && <SmokePanel s={s} />}
       {s.env && (
         <div><SectionLabel>Ambiente objetivo</SectionLabel>
-          <div className="flex flex-wrap items-center gap-2"><Badge variant="info" className="h-7 px-2.5"><Thermometer />{s.env.tMin}–{s.env.tMax} °C</Badge>{VACUUM.has(s.kind) ? <span className="text-xs text-muted-foreground">al vacío · sin control de humedad</span> : <Badge variant="info" className="h-7 px-2.5"><Droplets />{s.env.hMin}–{s.env.hMax} % HR</Badge>}</div>
+          <div className="flex flex-wrap items-center gap-2"><Badge variant="info" className="h-7 px-2.5"><Thermometer />{s.env.tMin}–{s.env.tMax} °C</Badge>{VACUUM.has(s.kind) ? <span className="text-xs text-muted-foreground">Empacado al vacío · no requiere HR específica</span> : <Badge variant="info" className="h-7 px-2.5"><Droplets />{s.env.hMin}–{s.env.hMax} % HR</Badge>}</div>
         </div>
       )}
       {stg.ph && s.ph && <PhPanel b={b} s={s} idx={idx} />}
