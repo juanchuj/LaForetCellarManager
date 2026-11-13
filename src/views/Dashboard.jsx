@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { tx, txt } from '@/lib/i18n';
 
 const TIER = {
   critical: { icon: OctagonAlert, row: 'border-l-danger', iconCls: 'text-danger bg-danger-soft', badge: 'danger' },
@@ -30,22 +31,22 @@ export function Dashboard() {
   return (
     <>
       <PageHeader
-        eyebrow="Bienvenido a la cava"
-        title={<>Panel de <em className="font-semibold italic text-gold-ink">producción</em></>}
-        description={`${active.length} lote${active.length === 1 ? '' : 's'} activo${active.length === 1 ? '' : 's'} · ${fmtG(totalG)} en verde · ${db.types.length} recetas madre`}
+        eyebrow={tx("Bienvenido a la cava")}
+        title={<>{tx("Panel de")}{' '}<em className="font-semibold italic text-gold-ink">{tx("producción")}</em></>}
+        description={txt`${active.length} lote${active.length === 1 ? '' : 's'} activo${active.length === 1 ? '' : 's'} · ${fmtG(totalG)} en verde · ${db.types.length} recetas madre`}
         actions={
           <>
-            <Button variant="outline" onClick={() => core.openWeighSession()}><Scale /> Jornada de pesaje</Button>
-            <Button onClick={() => core.openNewBatchModal()}><Plus /> Nuevo lote</Button>
+            <Button variant="outline" onClick={() => core.openWeighSession()}><Scale />{' '}{tx("Jornada de pesaje")}</Button>
+            <Button onClick={() => core.openNewBatchModal()}><Plus />{' '}{tx("Nuevo lote")}</Button>
           </>
         }
       />
 
-      <section className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4" aria-label="Indicadores">
-        <Kpi icon={Package} label="Lotes activos" value={active.length} note="en proceso ahora" />
-        <Kpi icon={Weight} label="Peso verde en cava" value={fmt(totalG / 1000, 2)} unit="kg" note="carne cruda ingresada" />
-        <Kpi icon={PackageCheck} label="Producidos" value={done.length} note="lotes terminados" />
-        <Kpi icon={Layers} label="Recetas" value={db.types.length} note="tipos de madurado" />
+      <section className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4" aria-label={tx("Indicadores")}>
+        <Kpi icon={Package} label={tx("Lotes activos")} value={active.length} note={tx("en proceso ahora")} />
+        <Kpi icon={Weight} label={tx("Peso verde en cava")} value={fmt(totalG / 1000, 2)} unit="kg" note={tx("carne cruda ingresada")} />
+        <Kpi icon={PackageCheck} label={tx("Producidos")} value={done.length} note={tx("lotes terminados")} />
+        <Kpi icon={Layers} label={tx("Recetas")} value={db.types.length} note={tx("tipos de madurado")} />
       </section>
 
       <Agenda items={agenda} />
@@ -53,15 +54,15 @@ export function Dashboard() {
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Card>
           <CardHeader>
-            <CardTitle className="font-display text-2xl font-semibold">Lotes en curso</CardTitle>
-            <CardDescription>Ordenados por lo que vence primero</CardDescription>
+            <CardTitle className="font-display text-2xl font-semibold">{tx("Lotes en curso")}</CardTitle>
+            <CardDescription>{tx("Ordenados por lo que vence primero")}</CardDescription>
             <CardAction>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/lotes')}>Ver todos <ArrowRight /></Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/lotes')}>{tx("Ver todos")}{' '}<ArrowRight /></Button>
             </CardAction>
           </CardHeader>
           <CardContent className="px-2">
             {rows.length === 0 ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">Sin lotes en proceso.</p>
+              <p className="py-10 text-center text-sm text-muted-foreground">{tx("Sin lotes en proceso.")}</p>
             ) : (
               <ul className="divide-y">
                 {rows.slice(0, 8).map(({ b, cs, eta, progress }) => (
@@ -76,8 +77,8 @@ export function Dashboard() {
                       </div>
                       <div className="order-3 col-span-2 flex items-center gap-2 text-sm sm:order-none sm:col-span-1">
                         <StageDot kind={cs.kind} />
-                        <span>{cs.kind}</span>
-                        {agendaIds.has(b.id) && <Badge variant="gold" className="px-1.5 py-0 text-[10px]">hoy</Badge>}
+                        <span>{tx(cs.kind)}</span>
+                        {agendaIds.has(b.id) && <Badge variant="gold" className="px-1.5 py-0 text-[10px]">{tx("hoy")}</Badge>}
                       </div>
                       <div className="hidden sm:block">
                         <Progress value={progress} className="h-1.5" indicatorStyle={{ background: stageVar(cs.kind) }} />
@@ -126,7 +127,7 @@ export function EtaPill({ eta }) {
   return (
     <span className={cn('rounded-md px-2 py-0.5 font-mono text-xs font-medium tabular',
       overdue ? 'bg-danger-soft text-danger' : soon ? 'bg-warning-soft text-warning' : 'text-muted-foreground')}>
-      {overdue ? `${-eta} d vencida` : eta === 0 ? 'hoy' : `${eta} d`}
+      {overdue ? txt`${-eta} d vencida` : eta === 0 ? tx('hoy') : `${eta} d`}
     </span>
   );
 }
@@ -136,19 +137,19 @@ function Agenda({ items }) {
   return (
     <Card>
       <CardHeader className="sm:grid-cols-[1fr_auto]">
-        <CardTitle className="font-display text-2xl font-semibold">¿Qué hago hoy?</CardTitle>
-        <CardDescription>Alertas HACCP, etapas vencidas y tareas, por urgencia</CardDescription>
+        <CardTitle className="font-display text-2xl font-semibold">{tx("¿Qué hago hoy?")}</CardTitle>
+        <CardDescription>{tx("Alertas HACCP, etapas vencidas y tareas, por urgencia")}</CardDescription>
         <div className="mt-1 flex flex-wrap gap-1.5 sm:col-start-2 sm:row-span-2 sm:row-start-1 sm:mt-0 sm:justify-end">
-          {counts.critical > 0 && <Badge variant="danger">{counts.critical} crítico{counts.critical > 1 ? 's' : ''}</Badge>}
-          {counts.warning > 0 && <Badge variant="warning">{counts.warning} alerta{counts.warning > 1 ? 's' : ''}</Badge>}
-          {counts.info > 0 && <Badge variant="info">{counts.info} aviso{counts.info > 1 ? 's' : ''}</Badge>}
+          {counts.critical > 0 && <Badge variant="danger">{tx("{0} crítico{1}", [counts.critical, counts.critical > 1 ? 's' : ''])}</Badge>}
+          {counts.warning > 0 && <Badge variant="warning">{tx("{0} alerta{1}", [counts.warning, counts.warning > 1 ? 's' : ''])}</Badge>}
+          {counts.info > 0 && <Badge variant="info">{tx("{0} aviso{1}", [counts.info, counts.info > 1 ? 's' : ''])}</Badge>}
         </div>
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
           <div className="flex items-center gap-3 rounded-lg bg-success-soft/60 px-4 py-5 text-sm">
             <CircleCheck className="size-5 text-success" />
-            <div><div className="font-medium">Todo al día</div><div className="text-muted-foreground">Nada urgente. Buen momento para una cata o planear un lote nuevo.</div></div>
+            <div><div className="font-medium">{tx("Todo al día")}</div><div className="text-muted-foreground">{tx("Nada urgente. Buen momento para una cata o planear un lote nuevo.")}</div></div>
           </div>
         ) : (
           <ul className="space-y-2">
@@ -175,7 +176,7 @@ function Agenda({ items }) {
             })}
           </ul>
         )}
-        {items.length > 10 && <p className="mt-2 text-center text-xs text-muted-foreground">y {items.length - 10} más…</p>}
+        {items.length > 10 && <p className="mt-2 text-center text-xs text-muted-foreground">{tx("y {0} más…", [items.length - 10])}</p>}
       </CardContent>
     </Card>
   );
@@ -195,12 +196,12 @@ function Distribution({ active }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-display text-2xl font-semibold">Distribución de cava</CardTitle>
-        <CardDescription>Lotes activos por etapa actual</CardDescription>
+        <CardTitle className="font-display text-2xl font-semibold">{tx("Distribución de cava")}</CardTitle>
+        <CardDescription>{tx("Lotes activos por etapa actual")}</CardDescription>
       </CardHeader>
       <CardContent>
         {total === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">Sin lotes activos.</p>
+          <p className="py-10 text-center text-sm text-muted-foreground">{tx("Sin lotes activos.")}</p>
         ) : (
           <>
             <div className="mb-5 flex h-3 overflow-hidden rounded-full ring-1 ring-border">
@@ -212,7 +213,7 @@ function Distribution({ active }) {
                   <StageDot kind={k} />
                   <span className="flex-1">{k}</span>
                   <span className="font-mono text-xs tabular text-muted-foreground">{fmtG(v.g)}</span>
-                  <span className="w-14 text-right font-mono text-xs tabular">{v.n} lote{v.n === 1 ? '' : 's'}</span>
+                  <span className="w-14 text-right font-mono text-xs tabular">{tx("{0} lote{1}", [v.n, v.n === 1 ? '' : 's'])}</span>
                 </li>
               ))}
             </ul>

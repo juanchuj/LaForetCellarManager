@@ -1,5 +1,6 @@
 /* View-model helpers: thin read-only wrappers over the verbatim core logic. */
 import { core } from './store.js';
+import { tx } from '@/lib/i18n';
 
 export const STAGE_VARS = {
   Curado: '--s-cur', Salmuera: '--s-sal', Salazon: '--s-slz', Adobado: '--s-ado', Fermentado: '--s-fer',
@@ -8,25 +9,25 @@ export const STAGE_VARS = {
 export const stageVar = (kind) => `var(${STAGE_VARS[kind] || '--muted-foreground'})`;
 
 export const STATUS = {
-  in_progress: { label: 'En proceso', variant: 'gold' },
-  done: { label: 'Terminado', variant: 'success' },
-  draft: { label: 'Borrador', variant: 'secondary' },
-  discarded: { label: 'Descartado', variant: 'danger' },
+  in_progress: { label: tx('En proceso'), variant: 'gold' },
+  done: { label: tx('Terminado'), variant: 'success' },
+  draft: { label: tx('Borrador'), variant: 'secondary' },
+  discarded: { label: tx('Descartado'), variant: 'danger' },
 };
 
 export const greenWeight = (b) => (b.pieces || []).reduce((s, p) => s + (+p.initialWeight || 0), 0);
 
 /* Agenda kinds → severity tiers for the "¿Qué hago hoy?" card */
 export const AGENDA_KIND = {
-  'pcc-fail': { tier: 'critical', label: 'HACCP' },
-  danger: { tier: 'critical', label: 'Peligro' },
-  pcc: { tier: 'warning', label: 'PCC' },
-  ferm: { tier: 'warning', label: 'Fermento' },
-  stage: { tier: 'warning', label: 'Etapa' },
-  ch: { tier: 'warning', label: 'Costra' },
-  weigh: { tier: 'warning', label: 'Pesar' },
-  ready: { tier: 'info', label: 'Lista' },
-  tasting: { tier: 'info', label: 'Cata' },
+  'pcc-fail': { tier: 'critical', label: tx('HACCP') },
+  danger: { tier: 'critical', label: tx('Peligro') },
+  pcc: { tier: 'warning', label: tx('PCC') },
+  ferm: { tier: 'warning', label: tx('Fermento') },
+  stage: { tier: 'warning', label: tx('Etapa') },
+  ch: { tier: 'warning', label: tx('Costra') },
+  weigh: { tier: 'warning', label: tx('Pesar') },
+  ready: { tier: 'info', label: tx('Lista') },
+  tasting: { tier: 'info', label: tx('Cata') },
 };
 
 export function batchRow(b) {

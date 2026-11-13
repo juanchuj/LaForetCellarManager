@@ -13,8 +13,9 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { tx } from '@/lib/i18n';
 
-const FILTERS = [['all', 'Todos'], ['in_progress', 'En proceso'], ['done', 'Terminados'], ['draft', 'Borradores'], ['discarded', 'Descartados']];
+const FILTERS = [['all', tx('Todos')], ['in_progress', tx('En proceso')], ['done', tx('Terminados')], ['draft', tx('Borradores')], ['discarded', tx('Descartados')]];
 
 export function Batches() {
   const db = useDB();
@@ -32,10 +33,10 @@ export function Batches() {
   return (
     <>
       <PageHeader
-        eyebrow="Producción"
-        title="Lotes"
-        description="Todos los lotes, del más reciente al más antiguo."
-        actions={<Button onClick={() => core.openNewBatchModal()}><Plus /> Nuevo lote</Button>}
+        eyebrow={tx("Producción")}
+        title={tx("Lotes")}
+        description={tx("Todos los lotes, del más reciente al más antiguo.")}
+        actions={<Button onClick={() => core.openNewBatchModal()}><Plus />{' '}{tx("Nuevo lote")}</Button>}
       />
 
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center">
@@ -50,13 +51,13 @@ export function Batches() {
         </Tabs>
         <div className="relative md:ml-auto md:w-72">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por ref, producto o lote" className="pl-9" aria-label="Buscar lotes" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Buscar por ref, producto o lote")} className="pl-9" aria-label={tx("Buscar lotes")} />
         </div>
       </div>
 
       {rows.length === 0 ? (
-        <EmptyState icon={Package} title={db.batches.length ? 'Sin resultados' : 'Sin lotes'}>
-          {db.batches.length ? 'Probá con otro filtro o búsqueda.' : 'Creá tu primer lote para empezar.'}
+        <EmptyState icon={Package} title={db.batches.length ? tx('Sin resultados') : tx('Sin lotes')}>
+          {db.batches.length ? tx('Probá con otro filtro o búsqueda.') : tx('Creá tu primer lote para empezar.')}
         </EmptyState>
       ) : (
         <>
@@ -65,14 +66,14 @@ export function Batches() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="pl-5">Lote</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Inicio</TableHead>
-                  <TableHead className="text-right">Verde</TableHead>
-                  <TableHead>Etapa actual</TableHead>
-                  <TableHead className="w-40">Progreso</TableHead>
-                  <TableHead>Fin estimado</TableHead>
-                  <TableHead className="text-right">Rendimiento</TableHead>
+                  <TableHead className="pl-5">{tx("Lote")}</TableHead>
+                  <TableHead>{tx("Estado")}</TableHead>
+                  <TableHead>{tx("Inicio")}</TableHead>
+                  <TableHead className="text-right">{tx("Verde")}</TableHead>
+                  <TableHead>{tx("Etapa actual")}</TableHead>
+                  <TableHead className="w-40">{tx("Progreso")}</TableHead>
+                  <TableHead>{tx("Fin estimado")}</TableHead>
+                  <TableHead className="text-right">{tx("Rendimiento")}</TableHead>
                   <TableHead className="w-8" />
                 </TableRow>
               </TableHeader>
@@ -81,7 +82,7 @@ export function Batches() {
                   <TableRow key={r.b.id} className="cursor-pointer" onClick={() => navigate(`/lotes/${r.b.id}`)}>
                     <TableCell className="pl-5">
                       <div className="font-mono text-sm font-medium">{r.b.ref}</div>
-                      <div className="text-xs text-muted-foreground">{r.b.typeName} · {r.b.pieces.length} pieza{r.b.pieces.length === 1 ? '' : 's'}</div>
+                      <div className="text-xs text-muted-foreground">{tx("{0} · {1} pieza{2}", [r.b.typeName, r.b.pieces.length, r.b.pieces.length === 1 ? '' : 's'])}</div>
                     </TableCell>
                     <TableCell><StatusBadge status={r.b.status} /></TableCell>
                     <TableCell className="font-mono text-xs tabular">{fmtDate(r.b.startedAt)}</TableCell>
@@ -116,7 +117,7 @@ export function Batches() {
                   </div>
                   <div className="mt-3 flex items-center justify-between text-sm">
                     <StageLabel kind={r.cs?.kind} />
-                    <span className="font-mono text-xs text-muted-foreground">fin {fmtDate(r.finalEnd)}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{tx("fin {0}", [fmtDate(r.finalEnd)])}</span>
                   </div>
                   <Progress value={r.progress} className="mt-2 h-1.5" indicatorStyle={r.cs ? { background: stageVar(r.cs.kind) } : undefined} />
                 </button>
@@ -139,8 +140,8 @@ export function StatusBadge({ status }) {
 function YieldCell({ r }) {
   return (
     <div className="font-mono text-xs tabular leading-relaxed">
-      <div>{r.yieldReal != null ? <span className="text-sm font-medium">{fmt(r.yieldReal, 1)}%</span> : <span className="text-muted-foreground">sin pesar</span>}</div>
-      <div className="text-muted-foreground">obj. {fmt(r.yieldTarget, 0)}% · {fmtG((r.yieldTarget / 100) * r.green)}</div>
+      <div>{r.yieldReal != null ? <span className="text-sm font-medium">{fmt(r.yieldReal, 1)}%</span> : <span className="text-muted-foreground">{tx("sin pesar")}</span>}</div>
+      <div className="text-muted-foreground">{tx("obj. {0}% · {1}", [fmt(r.yieldTarget, 0), fmtG((r.yieldTarget / 100) * r.green)])}</div>
     </div>
   );
 }

@@ -1,5 +1,23 @@
 # Changelog
 
+## v5.3.0 — 2026-11-13 · Idiomas
+
+### Nuevo
+- **Selector de idioma** en la barra lateral (también en el menú móvil): **Español, English, Italiano**.
+- La primera vez se usa el idioma del navegador (si no es uno de los tres, español). La elección se recuerda en cada dispositivo.
+- Se traduce toda la app: menús, botones, diálogos, avisos, alertas de la agenda, mensajes HACCP, diagnósticos de pH, catálogo de defectos, guía de cata, notas de sabor y etapas.
+- La **etiqueta nutricional y los sellos frontales** salen en el idioma seleccionado.
+- Números y fechas con el formato de cada idioma (por ejemplo, 3,2 kg en español e italiano y 3.2 kg en inglés).
+
+### Sin cambios
+- Los nombres que escribes (tipos, ingredientes, lotes, notas) se muestran tal cual.
+- Los datos se guardan igual en cualquier idioma: puedes cambiar de idioma sin afectar lotes, recetas ni backups.
+
+### Técnico
+- `src/lib/i18n.js` con `tx()` / `txt` y diccionarios `src/i18n/en.js` e `it.js` (1.552 textos) con el español como clave.
+- `gen-core.mjs` traduce los textos del core (mensajes, avisos, etiquetas SVG) sin tocar los datos que se guardan.
+- Pruebas nuevas: paridad de formularios en `en`, `it` y pseudo-idioma (sin fugas de traducción a la base) y `npm run test:i18n` (cobertura y placeholders). GitHub Actions corre `npm test`.
+
 ## v5.2.1 — 2026-11-13 · Correcciones
 
 ### Vista de cava

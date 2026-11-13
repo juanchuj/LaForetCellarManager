@@ -13,7 +13,7 @@ function makeDate(RealDate) {
 }
 
 // ── v5 core ──
-const store = {}; globalThis.localStorage = { getItem: (k) => store[k] ?? null, setItem: (k, v) => (store[k] = v), removeItem: (k) => delete store[k] };
+const store = {}; if (process.env.PARITY_LANG) store.laforet_lang = process.env.PARITY_LANG; globalThis.localStorage = { getItem: (k) => store[k] ?? null, setItem: (k, v) => (store[k] = v), removeItem: (k) => delete store[k] };
 const RealDate = Date;
 const D5 = makeDate(RealDate); globalThis.Date = D5; Math.random = seeded(42);
 const C = await import('../src/lib/core/core.js');
@@ -109,5 +109,7 @@ for (const [n, same, a, b] of steps) {
   ok += same; console.log(`${same ? '✓' : '✗'} ${n}`);
   if (!same && a && b) { let i = 0; while (a[i] === b[i]) i++; console.log('   legacy:', a.slice(i - 80, i + 120)); console.log('   v5    :', b.slice(i - 80, i + 120)); }
 }
-console.log(`\n${ok}/${steps.length} idénticos`);
+const leak = JSON.stringify(C.getDB()).match(/.{0,60}⟦[^⟧]*⟧.{0,20}/g);
+if (leak) { console.log('✗ texto traducido guardado en la db:'); leak.slice(0, 10).forEach((l) => console.log('   ', l)); steps.push(['sin fugas de idioma', false]); }
+console.log(`\n${ok}/${steps.length} idénticos${process.env.PARITY_LANG ? ` (idioma ${process.env.PARITY_LANG})` : ''}`);
 process.exit(ok === steps.length ? 0 : 1);

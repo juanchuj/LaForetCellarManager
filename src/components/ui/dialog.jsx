@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { XIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { tx } from '@/lib/i18n';
 
 function Dialog(props) { return <DialogPrimitive.Root data-slot="dialog" {...props} />; }
 function DialogTrigger(props) { return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />; }
@@ -21,7 +22,7 @@ function DialogContent({ className, children, showCloseButton = true, ...props }
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close className="absolute right-4 top-4 rounded-xs opacity-60 transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 [&_svg]:size-4">
-            <XIcon /><span className="sr-only">Cerrar</span>
+            <XIcon /><span className="sr-only">{tx("Cerrar")}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>

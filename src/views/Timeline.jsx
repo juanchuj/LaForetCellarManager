@@ -12,10 +12,11 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { tx } from '@/lib/i18n';
 
 const DAY = 86400000;
 const ZOOM = { ajustar: 0, semanas: 26, meses: 12 };
-const PERIOD = { 3: 'Últimos 3 meses', 6: 'Últimos 6 meses', 12: 'Último año', all: 'Todo' };
+const PERIOD = { 3: 'Últimos 3 meses', 6: 'Últimos 6 meses', 12: 'Último año', all: tx('Todo') };
 const LABEL_W = 232;
 
 /* Same segment rules as v4.4.3: done → real; in progress → real until today + projected;
@@ -95,42 +96,42 @@ export function Timeline() {
   return (
     <>
       <PageHeader
-        eyebrow="Vista de cava"
-        title="Línea de tiempo"
-        description="Etapas reales y proyectadas de cada lote. Hacé clic en una fila para abrir el lote."
-        actions={<Button onClick={() => core.openNewBatchModal()}><Plus /> Nuevo lote</Button>}
+        eyebrow={tx("Vista de cava")}
+        title={tx("Línea de tiempo")}
+        description={tx("Etapas reales y proyectadas de cada lote. Hacé clic en una fila para abrir el lote.")}
+        actions={<Button onClick={() => core.openNewBatchModal()}><Plus />{' '}{tx("Nuevo lote")}</Button>}
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Tabs value={scope} onValueChange={setScope}>
           <TabsList>
-            <TabsTrigger value="activos">Activos</TabsTrigger>
-            <TabsTrigger value="todos">Incluir terminados</TabsTrigger>
+            <TabsTrigger value="activos">{tx("Activos")}</TabsTrigger>
+            <TabsTrigger value="todos">{tx("Incluir terminados")}</TabsTrigger>
           </TabsList>
         </Tabs>
         <Tabs value={zoom} onValueChange={setZoom}>
           <TabsList>
-            <TabsTrigger value="ajustar">Ajustar</TabsTrigger>
-            <TabsTrigger value="meses">Meses</TabsTrigger>
-            <TabsTrigger value="semanas">Semanas</TabsTrigger>
+            <TabsTrigger value="ajustar">{tx("Ajustar")}</TabsTrigger>
+            <TabsTrigger value="meses">{tx("Meses")}</TabsTrigger>
+            <TabsTrigger value="semanas">{tx("Semanas")}</TabsTrigger>
           </TabsList>
         </Tabs>
         {scope === 'todos' && (
           <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger size="sm" className="w-44" aria-label="Período"><SelectValue /></SelectTrigger>
+            <SelectTrigger size="sm" className="w-44" aria-label={tx("Período")}><SelectValue /></SelectTrigger>
             <SelectContent>{Object.entries(PERIOD).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
           </Select>
         )}
-        {zoom !== 'ajustar' && <Button variant="outline" size="sm" onClick={() => scrollToToday(true)}><Crosshair /> Hoy</Button>}
+        {zoom !== 'ajustar' && <Button variant="outline" size="sm" onClick={() => scrollToToday(true)}><Crosshair />{' '}{tx("Hoy")}</Button>}
         <div className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
-          {stagesPresent.map((k) => <span key={k} className="inline-flex items-center gap-1.5"><StageDot kind={k} />{k}</span>)}
-          <span className="inline-flex items-center gap-1.5"><span className="seg-proj inline-block h-2.5 w-5 rounded-[3px]" style={{ '--seg': 'var(--muted-foreground)' }} />Proyectado</span>
-          <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-5 rounded-[3px] bg-muted ring-2 ring-danger" />Vencida</span>
+          {stagesPresent.map((k) => <span key={k} className="inline-flex items-center gap-1.5"><StageDot kind={k} />{tx(k)}</span>)}
+          <span className="inline-flex items-center gap-1.5"><span className="seg-proj inline-block h-2.5 w-5 rounded-[3px]" style={{ '--seg': 'var(--muted-foreground)' }} />{tx("Proyectado")}</span>
+          <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-5 rounded-[3px] bg-muted ring-2 ring-danger" />{tx("Vencida")}</span>
         </div>
       </div>
 
       {batches.length === 0 && (
-        <EmptyState icon={ChartGantt} title={scope === 'activos' ? 'Sin lotes activos' : 'Sin lotes en este período'}>{scope === 'activos' ? 'Cuando inicies un lote, sus etapas aparecen aquí.' : 'Probá con un período más largo.'}</EmptyState>
+        <EmptyState icon={ChartGantt} title={scope === 'activos' ? tx('Sin lotes activos') : tx('Sin lotes en este período')}>{scope === 'activos' ? tx('Cuando inicies un lote, sus etapas aparecen aquí.') : tx('Probá con un período más largo.')}</EmptyState>
       )}
       {(
         <Card className={cn('gap-0 overflow-hidden py-0', batches.length === 0 && 'hidden')}>
@@ -138,14 +139,14 @@ export function Timeline() {
             <div style={{ width: width + LABEL_W }} className="relative">
               {/* scale */}
               <div className="sticky top-0 z-20 flex h-10 border-b bg-card/95 backdrop-blur">
-                <div style={{ width: LABEL_W }} className="sticky left-0 z-10 flex shrink-0 items-center border-r bg-card px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Lote</div>
+                <div style={{ width: LABEL_W }} className="sticky left-0 z-10 flex shrink-0 items-center border-r bg-card px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">{tx("Lote")}</div>
                 <div className="relative flex-1">
                   {months.filter((m) => x(m) < width - 44).map((m) => (
                     <span key={+m} className="absolute top-0 flex h-full items-center whitespace-nowrap border-l border-border pl-2 font-mono text-[11px] text-muted-foreground" style={{ left: x(m) }}>
                       {px * 30 < 70 ? m.toLocaleDateString('es-CO', { month: 'narrow' }) : m.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' })}
                     </span>
                   ))}
-                  <span className="absolute top-1 -translate-x-1/2 rounded-full bg-gold px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-white" style={{ left: x(today) }}>hoy</span>
+                  <span className="absolute top-1 -translate-x-1/2 rounded-full bg-gold px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-white" style={{ left: x(today) }}>{tx("hoy")}</span>
                 </div>
               </div>
               {/* rows */}
@@ -163,7 +164,7 @@ export function Timeline() {
                       className="sticky left-0 z-10 flex shrink-0 flex-col justify-center border-r bg-card px-4 text-left transition-colors group-hover:bg-muted"
                     >
                       <span className="truncate text-sm font-medium">{b.typeName}</span>
-                      <span className="font-mono text-[11px] text-muted-foreground">{b.ref} · {fmtG(greenWeight(b))}{b.status === 'done' ? ' · terminado' : ''}</span>
+                      <span className="font-mono text-[11px] text-muted-foreground">{b.ref} · {fmtG(greenWeight(b))}{b.status === 'done' ? tx(' · terminado') : ''}</span>
                     </button>
                     <div className="relative flex-1 cursor-pointer transition-colors group-hover:bg-muted/40" onClick={() => navigate(`/lotes/${b.id}`)}>
                       {segmentsFor(b, today).map((seg, i) => {
@@ -179,13 +180,13 @@ export function Timeline() {
                                   seg.kind === 'overdue' && 'ring-2 ring-danger ring-offset-1 ring-offset-card')}
                                 style={{ left, width: w, ...(seg.kind === 'proj' ? { '--seg': color } : { background: color }) }}
                               >
-                                {!seg.cont && w > 64 ? seg.s.kind : ''}
+                                {!seg.cont && w > 64 ? tx(seg.s.kind) : ''}
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <div className="font-medium">{seg.s.kind} · {seg.kind === 'real' ? (seg.s.done ? 'completada' : 'en curso') : seg.kind === 'proj' ? 'proyectada' : 'vencida'}</div>
+                              <div className="font-medium">{tx(seg.s.kind)} · {seg.kind === 'real' ? (seg.s.done ? tx('completada') : tx('en curso')) : seg.kind === 'proj' ? tx('proyectada') : tx('vencida')}</div>
                               <div className="opacity-80">{fmtDate(seg.s.startedAt || b.startedAt)} → {fmtDate(seg.s.actualEnd || seg.s.expectedEnd)}</div>
-                              {seg.kind === 'overdue' && <div className="opacity-80">Fin esperado {fmtDate(seg.expected)}</div>}
+                              {seg.kind === 'overdue' && <div className="opacity-80">{tx("Fin esperado {0}", [fmtDate(seg.expected)])}</div>}
                             </TooltipContent>
                           </Tooltip>
                         );
@@ -198,7 +199,7 @@ export function Timeline() {
           </div>
         </Card>
       )}
-      {hiddenOld > 0 && <p className="mt-3 text-xs text-muted-foreground">{hiddenOld} lote{hiddenOld === 1 ? '' : 's'} terminado{hiddenOld === 1 ? '' : 's'} antes de este período no se muestra{hiddenOld === 1 ? '' : 'n'}. Elegí «Todo» para verlos.</p>}
+      {hiddenOld > 0 && <p className="mt-3 text-xs text-muted-foreground">{tx("{0} lote{1} terminado{2} antes de este período no se muestra{3}. Elegí «Todo» para verlos.", [hiddenOld, hiddenOld === 1 ? '' : 's', hiddenOld === 1 ? '' : 's', hiddenOld === 1 ? '' : 'n'])}</p>}
     </>
   );
 }

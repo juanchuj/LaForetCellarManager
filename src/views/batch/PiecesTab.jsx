@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Panel } from './shared';
+import { tx, txt } from '@/lib/i18n';
 
 /* Piece colors, tuned for cream backgrounds */
 export const PIECE_COLORS = ['#A7782F', '#5C7A2B', '#7E5B28', '#973527', '#3F7699', '#B85724', '#6E5446', '#8A6A9A', '#2F6E6A', '#9A4D6B'];
@@ -17,16 +18,16 @@ export function PiecesTab({ b, onTab }) {
   const nLogs = b.pieces.reduce((s, p) => s + (p.weightLogs || []).length, 0);
   return (
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-      <Panel title="Curvas de peso" description={`% del peso verde · ${nLogs} registro${nLogs === 1 ? '' : 's'}`}>
+      <Panel title={tx("Curvas de peso")} description={txt`% del peso verde · ${nLogs} registro${nLogs === 1 ? '' : 's'}`}>
         <WeightChart b={b} />
       </Panel>
       <div className="grid gap-6">
-        <Panel title="Piezas" description="Abrí el detalle con la flecha de cada pieza"
-          action={<Button size="sm" variant="outline" onClick={() => openDialog('secado-start', { batchId: b.id })}><Flag /> Inicio Secado</Button>}
+        <Panel title={tx("Piezas")} description={tx("Abrí el detalle con la flecha de cada pieza")}
+          action={<Button size="sm" variant="outline" onClick={() => openDialog('secado-start', { batchId: b.id })}><Flag />{' '}{tx("Inicio Secado")}</Button>}
           contentClassName="grid gap-2.5">
           {b.pieces.map((p, i) => <PieceCard key={p.id} b={b} p={p} idx={i} onTab={onTab} />)}
         </Panel>
-        {b.notes && <Panel title="Observaciones"><p className="whitespace-pre-line text-sm">{b.notes}</p></Panel>}
+        {b.notes && <Panel title={tx("Observaciones")}><p className="whitespace-pre-line text-sm">{b.notes}</p></Panel>}
       </div>
     </div>
   );
@@ -65,7 +66,7 @@ function WeightChart({ b }) {
 
   return (
     <div>
-      <svg viewBox={`0 0 ${w} ${h}`} className="h-auto w-full" role="img" aria-label="Curvas de peso por pieza">
+      <svg viewBox={`0 0 ${w} ${h}`} className="h-auto w-full" role="img" aria-label={tx("Curvas de peso por pieza")}>
         {grid.map((v) => (
           <g key={v}>
             <line x1={pad.l} x2={w - pad.r} y1={y(v)} y2={y(v)} stroke="var(--border)" strokeWidth="0.7" />
@@ -73,7 +74,7 @@ function WeightChart({ b }) {
           </g>
         ))}
         <line x1={pad.l} x2={w - pad.r} y1={y(targetPct)} y2={y(targetPct)} stroke="var(--success)" strokeDasharray="5 4" strokeWidth="1.2" />
-        <text x={w - pad.r - 4} y={y(targetPct) - 5} textAnchor="end" fontSize="10" fill="var(--success)" fontFamily="JetBrains Mono">objetivo {targetPct}%</text>
+        <text x={w - pad.r - 4} y={y(targetPct) - 5} textAnchor="end" fontSize="10" fill="var(--success)" fontFamily="JetBrains Mono">{tx("objetivo {0}%", [targetPct])}</text>
         <line x1={pad.l} x2={w - pad.r} y1={y(100)} y2={y(100)} stroke="var(--muted-foreground)" strokeDasharray="2 3" strokeWidth="0.7" opacity="0.5" />
         {theory}
         {b.pieces.map((p, idx) => {
@@ -90,7 +91,7 @@ function WeightChart({ b }) {
           );
         })}
         {nowX >= pad.l && nowX <= w - pad.r && (
-          <g><line x1={nowX} x2={nowX} y1={pad.t} y2={h - pad.b} stroke="var(--gold)" strokeWidth="1.2" /><text x={nowX} y={h - pad.b + 14} textAnchor="middle" fontSize="9" fill="var(--gold-ink)" fontFamily="JetBrains Mono">hoy</text></g>
+          <g><line x1={nowX} x2={nowX} y1={pad.t} y2={h - pad.b} stroke="var(--gold)" strokeWidth="1.2" /><text x={nowX} y={h - pad.b + 14} textAnchor="middle" fontSize="9" fill="var(--gold-ink)" fontFamily="JetBrains Mono">{tx("hoy")}</text></g>
         )}
         <text x={pad.l} y={h - 6} fontSize="9" fill="var(--muted-foreground)" fontFamily="JetBrains Mono">{fmtDateShort(b.startedAt)}</text>
         <text x={w - pad.r} y={h - 6} textAnchor="end" fontSize="9" fill="var(--muted-foreground)" fontFamily="JetBrains Mono">{fmtDateShort(finalEnd)}</text>
@@ -101,7 +102,7 @@ function WeightChart({ b }) {
           return <span key={p.id} className="inline-flex items-center gap-1.5 text-xs"><span className="h-0.5 w-3.5 rounded-full" style={{ background: PIECE_COLORS[idx % 10] }} /><span className="font-mono font-medium">{p.code}</span><span className="text-muted-foreground">{st.hasLog ? `${fmt(st.pct, 0)}%` : '—'}</span></span>;
         })}
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">{env ? `Punteado: curva teórica con T ${env.avgT?.toFixed(1)} °C y HR ${env.avgHR?.toFixed(0)} % (promedio Govee).` : 'Sin registros de T/HR: registrá la cava para ver la curva teórica de secado.'}</p>
+      <p className="mt-2 text-xs text-muted-foreground">{env ? txt`Punteado: curva teórica con T ${env.avgT?.toFixed(1)} °C y HR ${env.avgHR?.toFixed(0)} % (promedio Govee).` : tx('Sin registros de T/HR: registrá la cava para ver la curva teórica de secado.')}</p>
     </div>
   );
 }
@@ -124,7 +125,7 @@ function PieceCard({ b, p, idx, onTab }) {
   const blocked = safety.level === 'red' && !!safety.haccpBlock;
   const safeLvl = safety.level === 'red' && !blocked ? 'muted' : safety.level;
   const pct = st.hasLog ? Math.max(0, Math.min(100, st.pct || 0)) : 0;
-  const chip = st.needsStart ? 'Sin registros' : blocked || safeLvl === 'green' || safeLvl === 'yellow' ? safety.label.split(' · ')[0] : st.label;
+  const chip = st.needsStart ? tx('Sin registros') : blocked || safeLvl === 'green' || safeLvl === 'yellow' ? safety.label.split(' · ')[0] : st.label;
   const chipVariant = blocked ? 'danger' : safeLvl === 'green' ? 'success' : safeLvl === 'yellow' ? 'warning' : 'secondary';
 
   return (
@@ -137,56 +138,56 @@ function PieceCard({ b, p, idx, onTab }) {
             <span className="font-mono text-xs tabular text-muted-foreground">{st.hasLog ? fmtG(latest) : '—'} → <span className="text-gold-ink">{fmtG(st.target)}</span></span>
             <span className="ml-auto flex flex-wrap items-center gap-1.5">
               {safety.aw !== null && (
-                <Tooltip><TooltipTrigger asChild><span className="cursor-default rounded-md border bg-card px-1.5 py-0.5 font-mono text-[11px] tabular">aw {safety.awSource === 'medido' ? safety.aw.toFixed(3) : `≈${safety.aw.toFixed(2)}`}</span></TooltipTrigger>
-                  <TooltipContent>{safety.awSource === 'medido' ? 'Anclado a una medición real' : `Estimado por balance de masa, no medido (± ${core.AW_UNC_EST.toFixed(2)})`}</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><span className="cursor-default rounded-md border bg-card px-1.5 py-0.5 font-mono text-[11px] tabular">{tx("aw {0}", [safety.awSource === 'medido' ? safety.aw.toFixed(3) : `≈${safety.aw.toFixed(2)}`])}</span></TooltipTrigger>
+                  <TooltipContent>{safety.awSource === 'medido' ? tx('Anclado a una medición real') : txt`Estimado por balance de masa, no medido (± ${core.AW_UNC_EST.toFixed(2)})`}</TooltipContent></Tooltip>
               )}
               <Tooltip><TooltipTrigger asChild><span><Badge variant={chipVariant} className="cursor-default">{blocked && <TriangleAlert />}{chip}</Badge></span></TooltipTrigger><TooltipContent>{safety.label}</TooltipContent></Tooltip>
             </span>
           </div>
           <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-muted"><div className={cn('h-full rounded-full', st.level === 'green' ? 'bg-success' : 'bg-gold')} style={{ width: `${pct}%` }} /></div>
           <div className="mt-1 flex justify-between text-[11px] tabular text-muted-foreground">
-            <span>{st.hasLog && baseW > 0 ? `perdió ${fmt(lossPct, 1)} %` : 'sin pesar'}</span>
-            <span>{st.hasLog ? `${fmt(st.pct, 0)} % del camino al objetivo` : ''}</span>
+            <span>{st.hasLog && baseW > 0 ? txt`perdió ${fmt(lossPct, 1)} %` : tx('sin pesar')}</span>
+            <span>{st.hasLog ? txt`${fmt(st.pct, 0)} % del camino al objetivo` : ''}</span>
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end justify-between gap-1 sm:flex-row sm:items-center">
-          <Button size="sm" variant="outline" onClick={() => openDialog('piece-weight', { batchId: b.id, pieceId: p.id })}><Plus /> Peso</Button>
+          <Button size="sm" variant="outline" onClick={() => openDialog('piece-weight', { batchId: b.id, pieceId: p.id })}><Plus />{' '}{tx("Peso")}</Button>
           <div className="flex gap-1">
-            <Tooltip><TooltipTrigger asChild><Button size="icon-sm" variant="outline" aria-label="Medir aw" onClick={() => openDialog('aw-reading', { batchId: b.id, pieceId: p.id })}><FlaskConical /></Button></TooltipTrigger><TooltipContent>Medir aw</TooltipContent></Tooltip>
-            <CollapsibleTrigger asChild><Button size="icon-sm" variant="ghost" aria-label="Ver detalle" className="group"><ChevronDown className="transition-transform group-data-[state=open]:rotate-180" /></Button></CollapsibleTrigger>
+            <Tooltip><TooltipTrigger asChild><Button size="icon-sm" variant="outline" aria-label={tx("Medir aw")} onClick={() => openDialog('aw-reading', { batchId: b.id, pieceId: p.id })}><FlaskConical /></Button></TooltipTrigger><TooltipContent>{tx("Medir aw")}</TooltipContent></Tooltip>
+            <CollapsibleTrigger asChild><Button size="icon-sm" variant="ghost" aria-label={tx("Ver detalle")} className="group"><ChevronDown className="transition-transform group-data-[state=open]:rotate-180" /></Button></CollapsibleTrigger>
           </div>
         </div>
       </div>
-      {blocked && safety.haccpWhy && <div className="-mt-1 px-3 pb-3 text-xs text-danger">Bloqueada: {safety.haccpWhy} <button className="font-medium underline" onClick={() => onTab('haccp')}>Ver HACCP</button></div>}
+      {blocked && safety.haccpWhy && <div className="-mt-1 px-3 pb-3 text-xs text-danger">{tx("Bloqueada: {0}", [safety.haccpWhy])} <button className="font-medium underline" onClick={() => onTab('haccp')}>{tx("Ver HACCP")}</button></div>}
       <CollapsibleContent className="grid gap-3 border-t px-3 py-3 text-sm">
-        {st.needsStart && <div className="flex flex-wrap items-center gap-2 rounded-md bg-warning-soft/60 px-3 py-2 text-xs text-warning"><TriangleAlert className="size-4" />Sin registros de peso. Registrá el peso al iniciar Secado para calcular el objetivo.<Button size="sm" className="ml-auto h-7" onClick={() => openDialog('secado-start', { batchId: b.id })}>Registrar inicio</Button></div>}
-        {startW && !startExplicit && <p className="text-xs text-muted-foreground">Peso inicial inferido del primer registro ({fmtG(startW)}). <button className="text-gold-ink underline" onClick={() => openDialog('secado-start', { batchId: b.id })}>Ajustar</button></p>}
+        {st.needsStart && <div className="flex flex-wrap items-center gap-2 rounded-md bg-warning-soft/60 px-3 py-2 text-xs text-warning"><TriangleAlert className="size-4" />{tx("Sin registros de peso. Registrá el peso al iniciar Secado para calcular el objetivo.")}<Button size="sm" className="ml-auto h-7" onClick={() => openDialog('secado-start', { batchId: b.id })}>{tx("Registrar inicio")}</Button></div>}
+        {startW && !startExplicit && <p className="text-xs text-muted-foreground">{tx("Peso inicial inferido del primer registro ({0}).", [fmtG(startW)])}{' '}<button className="text-gold-ink underline" onClick={() => openDialog('secado-start', { batchId: b.id })}>{tx("Ajustar")}</button></p>}
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-          <Metric label="Verde" value={fmtGExact(p.initialWeight)} />
-          <Metric label="Inicio Secado" value={startW ? fmtGExact(startW) : '—'} />
-          <Metric label="Actual" value={st.hasLog ? fmtGExact(latest) : '—'} />
-          <Metric label="Objetivo %" value={fmtGExact(st.target)} valueClassName="text-gold-ink" />
-          {awBasedTarget ? <Metric label={`Objetivo aw ≤${awTarget.toFixed(2)}`} value={fmtGExact(awBasedTarget)} valueClassName="text-warning" /> : <span />}
-          <Metric label="Pérdida" value={st.hasLog && baseW > 0 ? `${fmt(lossPct, 1)}%` : '—'} />
+          <Metric label={tx("Verde")} value={fmtGExact(p.initialWeight)} />
+          <Metric label={tx("Inicio Secado")} value={startW ? fmtGExact(startW) : '—'} />
+          <Metric label={tx("Actual")} value={st.hasLog ? fmtGExact(latest) : '—'} />
+          <Metric label={tx("Objetivo %")} value={fmtGExact(st.target)} valueClassName="text-gold-ink" />
+          {awBasedTarget ? <Metric label={txt`Objetivo aw ≤${awTarget.toFixed(2)}`} value={fmtGExact(awBasedTarget)} valueClassName="text-warning" /> : <span />}
+          <Metric label={tx("Pérdida")} value={st.hasLog && baseW > 0 ? `${fmt(lossPct, 1)}%` : '—'} />
         </div>
         <p className="text-xs">
           {awSt.last
-            ? <>aw medido <b className="font-mono">{awSt.last.aw.toFixed(3)}</b> el {fmtDateShort(awSt.last.date)}{awSt.last.instrument ? ` (${awSt.last.instrument})` : ''} · hoy ≈ <b className="font-mono">{awSt.aw.toFixed(3)}</b></>
-            : <>aw <b>estimado</b> ≈ <b className="font-mono">{awSt.aw.toFixed(3)} ± {awSt.unc.toFixed(2)}</b> · no medido (balance de masa){awSt.saltAssumed && <span className="text-warning"> · sal supuesta 2,8 %</span>}</>}
+            ? <>{tx("aw medido")}{' '}<b className="font-mono">{awSt.last.aw.toFixed(3)}</b>{' '}{tx("el {0}{1} · hoy ≈", [fmtDateShort(awSt.last.date), awSt.last.instrument ? ` (${awSt.last.instrument})` : ''])}{' '}<b className="font-mono">{awSt.aw.toFixed(3)}</b></>
+            : <>aw <b>{tx("estimado")}</b> ≈ <b className="font-mono">{awSt.aw.toFixed(3)} ± {awSt.unc.toFixed(2)}</b>{' '}{tx("· no medido (balance de masa)")}{awSt.saltAssumed && <span className="text-warning">{' '}{tx("· sal supuesta 2,8 %")}</span>}</>}
         </p>
-        {startW && st.hasLog && <p className="text-xs text-muted-foreground"><span className="font-mono">{fmtGExact(startW)} × (1 − {core.batchLossTargetPct(b)}%) = <b className="text-gold-ink">{fmtGExact(st.target)}</b></span> · faltan <b className="font-mono">{fmtGExact(Math.max(0, latest - st.target))}</b></p>}
+        {startW && st.hasLog && <p className="text-xs text-muted-foreground"><span className="font-mono">{fmtGExact(startW)} × (1 − {core.batchLossTargetPct(b)}%) = <b className="text-gold-ink">{fmtGExact(st.target)}</b></span>{' '}{tx("· faltan")}{' '}<b className="font-mono">{fmtGExact(Math.max(0, latest - st.target))}</b></p>}
         {est?.hasEnough ? (
           <div className="grid grid-cols-3 gap-3 rounded-md bg-muted/60 p-2.5">
-            <Metric label="Progreso (exponencial)" value={`${fmt(est.pctComplete, 0)}%`} valueClassName="text-gold-ink" />
-            <Metric label="Días restantes" value={est.daysRemaining < 1 ? '<1' : fmt(est.daysRemaining, 1)} />
-            <Metric label="Fin estimado" value={fmtDate(est.estCompletion)} valueClassName="text-success" />
+            <Metric label={tx("Progreso (exponencial)")} value={`${fmt(est.pctComplete, 0)}%`} valueClassName="text-gold-ink" />
+            <Metric label={tx("Días restantes")} value={est.daysRemaining < 1 ? '<1' : fmt(est.daysRemaining, 1)} />
+            <Metric label={tx("Fin estimado")} value={fmtDate(est.estCompletion)} valueClassName="text-success" />
           </div>
         ) : est?.note ? <p className="text-xs text-muted-foreground">{est.note}</p> : null}
-        <p className="text-xs text-muted-foreground">Seguridad: {safety.label}{safety.aw !== null ? ` · objetivo aw ≤ ${safety.awTarget.toFixed(2)}` : ''}</p>
+        <p className="text-xs text-muted-foreground">{tx("Seguridad: {0}{1}", [safety.label, safety.aw !== null ? txt` · objetivo aw ≤ ${safety.awTarget.toFixed(2)}` : ''])}</p>
         {p.notes && <p className="text-xs text-muted-foreground">{p.notes}</p>}
         {awReads.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 text-xs"><span className="text-muted-foreground">Mediciones de aw:</span>
-            {awReads.map((r) => <Badge key={r.id} variant="outline" className="gap-1 font-mono">{fmtDateShort(r.date)} {r.aw.toFixed(3)}<button aria-label="Eliminar medición" onClick={() => ask(() => core.removeAwReading(b.id, p.id, r.id))}><Trash2 className="text-muted-foreground hover:text-danger" /></button></Badge>)}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs"><span className="text-muted-foreground">{tx("Mediciones de aw:")}</span>
+            {awReads.map((r) => <Badge key={r.id} variant="outline" className="gap-1 font-mono">{fmtDateShort(r.date)} {r.aw.toFixed(3)}<button aria-label={tx("Eliminar medición")} onClick={() => ask(() => core.removeAwReading(b.id, p.id, r.id))}><Trash2 className="text-muted-foreground hover:text-danger" /></button></Badge>)}
           </div>
         )}
         {logs.length > 0 && (
@@ -198,12 +199,12 @@ function PieceCard({ b, p, idx, onTab }) {
                 <span className="font-mono tabular">{fmtGExact(l.weight)}</span>
                 <span className="w-12 text-right font-mono tabular text-muted-foreground">{fmt(100 * (1 - l.weight / p.initialWeight), 1)}%</span>
                 <span className="flex">
-                  {l.id && <Tooltip><TooltipTrigger asChild><Button size="icon-sm" variant="ghost" className="size-7" aria-label={l.outlier ? 'Reincluir' : 'Marcar outlier'} onClick={() => core.toggleOutlier(b.id, p.id, l.id)}>{l.outlier ? <RotateCcw /> : <CircleSlash />}</Button></TooltipTrigger><TooltipContent>{l.outlier ? 'Reincluir en el ajuste' : 'Marcar como outlier (no cuenta en el ajuste)'}</TooltipContent></Tooltip>}
-                  {l.id && <Button size="icon-sm" variant="ghost" className="size-7" aria-label="Eliminar registro" onClick={() => ask(() => core.removePieceWeightLog(b.id, p.id, l.id))}><Trash2 /></Button>}
+                  {l.id && <Tooltip><TooltipTrigger asChild><Button size="icon-sm" variant="ghost" className="size-7" aria-label={l.outlier ? tx('Reincluir') : tx('Marcar outlier')} onClick={() => core.toggleOutlier(b.id, p.id, l.id)}>{l.outlier ? <RotateCcw /> : <CircleSlash />}</Button></TooltipTrigger><TooltipContent>{l.outlier ? tx('Reincluir en el ajuste') : tx('Marcar como outlier (no cuenta en el ajuste)')}</TooltipContent></Tooltip>}
+                  {l.id && <Button size="icon-sm" variant="ghost" className="size-7" aria-label={tx("Eliminar registro")} onClick={() => ask(() => core.removePieceWeightLog(b.id, p.id, l.id))}><Trash2 /></Button>}
                 </span>
               </li>
             ))}
-            {logs.length > 6 && <li className="px-2.5 py-1.5 text-center text-muted-foreground">y {logs.length - 6} más antiguos</li>}
+            {logs.length > 6 && <li className="px-2.5 py-1.5 text-center text-muted-foreground">{tx("y {0} más antiguos", [logs.length - 6])}</li>}
           </ul>
         )}
       </CollapsibleContent>

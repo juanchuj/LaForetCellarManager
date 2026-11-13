@@ -17,6 +17,7 @@ import { PiecesTab } from './PiecesTab';
 import { StagesTab } from './StagesTab';
 import { AnalysisTab, HaccpTab, TastingsTab } from './OtherTabs';
 import { Dot } from './shared';
+import { tx, txt } from '@/lib/i18n';
 
 let lastTab = 'piezas'; // remembered across batches, like v4.4.3 batchTab
 
@@ -25,7 +26,7 @@ export function BatchDetail({ id }) {
   const [tab, setTabState] = useState(lastTab);
   const setTab = (t) => { lastTab = t; setTabState(t); };
   const b = db.batches.find((x) => x.id === id);
-  if (!b) return <EmptyState title="Lote no encontrado" action={<Button variant="outline" onClick={() => navigate('/lotes')}><ArrowLeft /> Volver a lotes</Button>}>Puede haber sido borrado en otra pestaña.</EmptyState>;
+  if (!b) return <EmptyState title={tx("Lote no encontrado")} action={<Button variant="outline" onClick={() => navigate('/lotes')}><ArrowLeft />{' '}{tx("Volver a lotes")}</Button>}>{tx("Puede haber sido borrado en otra pestaña.")}</EmptyState>;
 
   const green = greenWeight(b);
   const target = (b.targetYield / 100) * green;
@@ -42,11 +43,11 @@ export function BatchDetail({ id }) {
   const reached = b.stages.filter((s) => s.done || (s.startedAt && new Date(s.startedAt).getTime() <= now)).length;
   const allDone = nSt > 0 && b.stages.every((s) => s.done);
   const tabs = [
-    ['piezas', 'Piezas', b.pieces.length, has('weigh', 'ready')],
-    ['etapas', 'Etapas', !nSt || allDone ? null : `${Math.min(reached, nSt)}/${nSt}`, has('stage', 'ferm', 'ch', 'danger')],
-    ['haccp', 'HACCP', null, (hac && hac.criticalFails > 0) || has('pcc', 'pcc-fail')],
-    ['catas', 'Catas', nCat || null, has('tasting')],
-    ['analisis', 'Análisis', null, false],
+    ['piezas', tx('Piezas'), b.pieces.length, has('weigh', 'ready')],
+    ['etapas', tx('Etapas'), !nSt || allDone ? null : `${Math.min(reached, nSt)}/${nSt}`, has('stage', 'ferm', 'ch', 'danger')],
+    ['haccp', tx('HACCP'), null, (hac && hac.criticalFails > 0) || has('pcc', 'pcc-fail')],
+    ['catas', tx('Catas'), nCat || null, has('tasting')],
+    ['analisis', tx('Análisis'), null, false],
   ];
 
   const sec = core.findSecadoStage(b);
@@ -55,51 +56,51 @@ export function BatchDetail({ id }) {
 
   return (
     <>
-      <button onClick={() => navigate('/lotes')} className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Lotes</button>
+      <button onClick={() => navigate('/lotes')} className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" />{' '}{tx("Lotes")}</button>
 
       <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="mb-1.5 font-mono text-xs tracking-wider text-gold-ink">{b.ref}</p>
           <h1 className="font-display text-4xl font-semibold leading-tight">{b.typeName}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <StatusBadge status={b.status} /><span>Iniciado {fmtDate(b.startedAt)}</span>
-            {b.lot && <><span aria-hidden>·</span><span>Lote {b.lot}</span></>}
+            <StatusBadge status={b.status} /><span>{tx("Iniciado {0}", [fmtDate(b.startedAt)])}</span>
+            {b.lot && <><span aria-hidden>·</span><span>{tx("Lote {0}", [b.lot])}</span></>}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {b.status === 'in_progress' && <Button variant="outline" onClick={() => openDialog('bulk-weight', { batchId: b.id })}><Scale /> Pesar piezas</Button>}
-          {b.status === 'done' && <Button variant="outline" onClick={() => openDialog('tasting', { batchId: b.id, tastingId: 'new' })}><Wine /> Nueva cata</Button>}
+          {b.status === 'in_progress' && <Button variant="outline" onClick={() => openDialog('bulk-weight', { batchId: b.id })}><Scale />{' '}{tx("Pesar piezas")}</Button>}
+          {b.status === 'done' && <Button variant="outline" onClick={() => openDialog('tasting', { batchId: b.id, tastingId: 'new' })}><Wine />{' '}{tx("Nueva cata")}</Button>}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild><Button variant="outline"><MoreHorizontal /> Acciones</Button></DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild><Button variant="outline"><MoreHorizontal />{' '}{tx("Acciones")}</Button></DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
-              <DropdownMenuLabel>Registros</DropdownMenuLabel>
-              <DropdownMenuItem onSelect={() => openDialog('bulk-weight', { batchId: b.id })}><Scale /> Pesar todas las piezas</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => openDialog('env-log', { batchId: b.id })}><Thermometer /> T / HR de la cava</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => openDialog('tasting', { batchId: b.id, tastingId: 'new' })}><Wine /> Nueva cata{nCat ? ` (${nCat})` : ''}</DropdownMenuItem>
+              <DropdownMenuLabel>{tx("Registros")}</DropdownMenuLabel>
+              <DropdownMenuItem onSelect={() => openDialog('bulk-weight', { batchId: b.id })}><Scale />{' '}{tx("Pesar todas las piezas")}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => openDialog('env-log', { batchId: b.id })}><Thermometer />{' '}{tx("T / HR de la cava")}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => openDialog('tasting', { batchId: b.id, tastingId: 'new' })}><Wine />{' '}{tx("Nueva cata{0}", [nCat ? ` (${nCat})` : ''])}</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => ask(() => core.openEditBatchModal(b.id))}><Pencil /> Editar lote</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => openDialog('label', { typeId: b.typeId, batchId: b.id })}><Tag /> Etiqueta nutricional</DropdownMenuItem>
-              {b.status === 'in_progress' && <DropdownMenuItem onSelect={() => ask(() => core.finishBatch(b.id))}><CircleCheck /> Marcar terminado</DropdownMenuItem>}
+              <DropdownMenuItem onSelect={() => ask(() => core.openEditBatchModal(b.id))}><Pencil />{' '}{tx("Editar lote")}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => openDialog('label', { typeId: b.typeId, batchId: b.id })}><Tag />{' '}{tx("Etiqueta nutricional")}</DropdownMenuItem>
+              {b.status === 'in_progress' && <DropdownMenuItem onSelect={() => ask(() => core.finishBatch(b.id))}><CircleCheck />{' '}{tx("Marcar terminado")}</DropdownMenuItem>}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => ask(() => core.discardBatch(b.id))}>{b.status === 'discarded' ? <><RotateCcw /> Reactivar lote</> : <><Ban /> Descartar (recuperable)</>}</DropdownMenuItem>
-              <DropdownMenuItem variant="destructive" onSelect={() => core.deleteBatchHard(b.id)}><Trash2 /> Eliminar permanentemente</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => ask(() => core.discardBatch(b.id))}>{b.status === 'discarded' ? <><RotateCcw />{' '}{tx("Reactivar lote")}</> : <><Ban />{' '}{tx("Descartar (recuperable)")}</>}</DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onSelect={() => core.deleteBatchHard(b.id)}><Trash2 />{' '}{tx("Eliminar permanentemente")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </header>
 
       <section className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <Stat label="Peso verde" value={`${fmt(green / 1000, 2)} kg`} note={`${b.pieces.length} pieza${b.pieces.length === 1 ? '' : 's'}`} />
-        <Stat label="Peso actual" value={cw ? `${fmt(cw / 1000, 2)} kg` : '—'} note={cw ? `medido ${fmtDate(new Date(core.latestBatchMeasurementDate(b)))}` : 'sin registros'} />
-        <Stat label="Objetivo" value={`${fmt(target / 1000, 2)} kg`} note={`rendimiento ${b.targetYield}% · pierde ${fmt(lossTarget, 0)}%`} />
-        <Stat label="Pérdida actual" value={loss === null ? '—' : `${fmt(loss, 1)}%`} note={`de ${lossTarget}% objetivo`} valueClassName={loss === null ? '' : loss >= lossTarget ? 'text-success' : ''}>
+        <Stat label={tx("Peso verde")} value={`${fmt(green / 1000, 2)} kg`} note={txt`${b.pieces.length} pieza${b.pieces.length === 1 ? '' : 's'}`} />
+        <Stat label={tx("Peso actual")} value={cw ? `${fmt(cw / 1000, 2)} kg` : '—'} note={cw ? txt`medido ${fmtDate(new Date(core.latestBatchMeasurementDate(b)))}` : tx('sin registros')} />
+        <Stat label={tx("Objetivo")} value={`${fmt(target / 1000, 2)} kg`} note={txt`rendimiento ${b.targetYield}% · pierde ${fmt(lossTarget, 0)}%`} />
+        <Stat label={tx("Pérdida actual")} value={loss === null ? '—' : `${fmt(loss, 1)}%`} note={txt`de ${lossTarget}% objetivo`} valueClassName={loss === null ? '' : loss >= lossTarget ? 'text-success' : ''}>
           {loss !== null && <Progress value={Math.min(100, (100 * loss) / lossTarget)} className="mt-2 h-1.5" indicatorClassName={loss >= lossTarget ? 'bg-success' : 'bg-gold'} />}
         </Stat>
       </section>
 
       {ch?.risk && (
-        <Alert variant="warning" className="mb-6"><TriangleAlert /><AlertTitle>Riesgo de case hardening · pieza más gruesa {thick.thickness} cm</AlertTitle>
-          <AlertDescription>{ch.msg}. Promedio T {ch.avgT.toFixed(1)} °C · HR {ch.avgHR.toFixed(0)} % · VPD {ch.vpd.toFixed(2)} kPa (seguro ~{ch.safeVpd.toFixed(2)} kPa).</AlertDescription></Alert>
+        <Alert variant="warning" className="mb-6"><TriangleAlert /><AlertTitle>{tx("Riesgo de case hardening · pieza más gruesa {0} cm", [thick.thickness])}</AlertTitle>
+          <AlertDescription>{tx("{0}. Promedio T {1} °C · HR {2} % · VPD {3} kPa (seguro ~{4} kPa).", [ch.msg, ch.avgT.toFixed(1), ch.avgHR.toFixed(0), ch.vpd.toFixed(2), ch.safeVpd.toFixed(2)])}</AlertDescription></Alert>
       )}
 
       <Tabs value={tab} onValueChange={setTab} className="gap-5">

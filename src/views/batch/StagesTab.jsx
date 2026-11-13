@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { LEVEL_VARIANT } from './shared';
 import { VACUUM } from '@/views/Types';
+import { tx, txt } from '@/lib/i18n';
 
 export function StagesTab({ b }) {
   const curIdx = b.stages.findIndex((x) => !x.done);
@@ -33,35 +34,35 @@ function StageCard({ b, s, idx, current }) {
     <div className="flex flex-wrap items-center gap-3">
       <span className="grid size-8 shrink-0 place-items-center rounded-full font-mono text-xs font-medium text-white" style={{ background: s.done || current ? stageVar(s.kind) : 'var(--muted-foreground)' }}>{idx + 1}</span>
       <div className="min-w-0">
-        <div className="font-medium">{s.kind}</div>
+        <div className="font-medium">{tx(s.kind)}</div>
         <div className="font-mono text-[11px] tabular text-muted-foreground">{fmtDate(start)} → {fmtDate(s.actualEnd || end)} · {days ? `${fmt(days, 1)} d` : '—'}</div>
       </div>
       <span className="ml-auto">
-        {s.done ? <Badge variant="success"><CircleCheck /> Terminada</Badge>
-          : current ? <Badge variant={LEVEL_VARIANT[ts.level] || 'gold'}>{left === null ? ts.label : left < 0 ? `${-left} d vencida` : `faltan ${left} d`}</Badge>
-            : <Badge variant="secondary">Pendiente</Badge>}
+        {s.done ? <Badge variant="success"><CircleCheck />{' '}{tx("Terminada")}</Badge>
+          : current ? <Badge variant={LEVEL_VARIANT[ts.level] || 'gold'}>{left === null ? ts.label : left < 0 ? txt`${-left} d vencida` : txt`faltan ${left} d`}</Badge>
+            : <Badge variant="secondary">{tx("Pendiente")}</Badge>}
       </span>
     </div>
   );
 
   const body = (
     <div className="grid gap-5">
-      {ws && <div className="flex flex-wrap items-center gap-2 text-sm"><Badge variant={LEVEL_VARIANT[ws.level]}>Peso {fmtG(ws.current)} · objetivo {fmtG(ws.target)} ({ws.deltaPct >= 0 ? '+' : ''}{fmt(ws.deltaPct, 1)}%)</Badge><span className="text-xs text-muted-foreground">{ws.label}</span></div>}
+      {ws && <div className="flex flex-wrap items-center gap-2 text-sm"><Badge variant={LEVEL_VARIANT[ws.level]}>{tx("Peso {0} · objetivo {1} ({2}{3}%)", [fmtG(ws.current), fmtG(ws.target), ws.deltaPct >= 0 ? '+' : '', fmt(ws.deltaPct, 1)])}</Badge><span className="text-xs text-muted-foreground">{ws.label}</span></div>}
       <StageRecipe b={b} s={s} />
       {s.kind === 'Curado' && s.brine && <BrinePanel b={b} s={s} />}
       {s.inoc && <InoculantPanel b={b} s={s} />}
       {s.kind === 'Ahumado' && s.smoke && <SmokePanel s={s} />}
       {s.env && (
-        <div><SectionLabel>Ambiente objetivo</SectionLabel>
-          <div className="flex flex-wrap items-center gap-2"><Badge variant="info" className="h-7 px-2.5"><Thermometer />{s.env.tMin}–{s.env.tMax} °C</Badge>{VACUUM.has(s.kind) ? <span className="text-xs text-muted-foreground">Empacado al vacío · no requiere HR específica</span> : <Badge variant="info" className="h-7 px-2.5"><Droplets />{s.env.hMin}–{s.env.hMax} % HR</Badge>}</div>
+        <div><SectionLabel>{tx("Ambiente objetivo")}</SectionLabel>
+          <div className="flex flex-wrap items-center gap-2"><Badge variant="info" className="h-7 px-2.5"><Thermometer />{s.env.tMin}–{s.env.tMax} °C</Badge>{VACUUM.has(s.kind) ? <span className="text-xs text-muted-foreground">{tx("Empacado al vacío · no requiere HR específica")}</span> : <Badge variant="info" className="h-7 px-2.5"><Droplets />{tx("{0}–{1} % HR", [s.env.hMin, s.env.hMax])}</Badge>}</div>
         </div>
       )}
       {stg.ph && s.ph && <PhPanel b={b} s={s} idx={idx} />}
-      {stg.press && s.press && <Badge variant="gold">Prensado activado</Badge>}
+      {stg.press && s.press && <Badge variant="gold">{tx("Prensado activado")}</Badge>}
       {current && (
         <div className="flex flex-wrap gap-2 border-t pt-4">
-          <Button size="sm" onClick={() => ask(() => core.completeStage(b.id, idx))}><CircleCheck /> Marcar terminada</Button>
-          <Button size="sm" variant="outline" onClick={() => openDialog('stage-dates', { batchId: b.id, idx })}><CalendarClock /> Ajustar fechas</Button>
+          <Button size="sm" onClick={() => ask(() => core.completeStage(b.id, idx))}><CircleCheck />{' '}{tx("Marcar terminada")}</Button>
+          <Button size="sm" variant="outline" onClick={() => openDialog('stage-dates', { batchId: b.id, idx })}><CalendarClock />{' '}{tx("Ajustar fechas")}</Button>
         </div>
       )}
     </div>
@@ -94,9 +95,9 @@ function StageRecipe({ b, s }) {
   const rows = [];
   if (s.kind === 'Curado' && s.brine) {
     const r = core.calcEqBrine(totalKg * 1000, s.brine.saltPct, s.brine.waterPct, s.brine.saltIngredient, s.brine);
-    rows.push({ n: s.brine.saltIngredient || 'Sal común', a: `${fmt(r.commonG, 2)} g`, eb: true });
+    rows.push({ n: s.brine.saltIngredient || tx('Sal común'), a: `${fmt(r.commonG, 2)} g`, eb: true });
     if (r.cureG > 0 && r.cureIng) rows.push({ n: r.cureIng.name, a: `${fmt(r.cureG, 2)} g`, eb: true });
-    if (r.waterG > 0) rows.push({ n: 'Agua destilada', a: `${fmt(r.waterG, 0)} ml`, eb: true });
+    if (r.waterG > 0) rows.push({ n: tx('Agua destilada'), a: `${fmt(r.waterG, 0)} ml`, eb: true });
   }
   (s.recipe || []).forEach((r) => {
     const ing = db.ingredients.find((i) => i.name === r.ingredient);
@@ -104,11 +105,11 @@ function StageRecipe({ b, s }) {
   });
   return (
     <div>
-      <SectionLabel>Receta escalada · {fmtG(totalKg * 1000)}</SectionLabel>
+      <SectionLabel>{tx("Receta escalada · {0}", [fmtG(totalKg * 1000)])}</SectionLabel>
       <ul className="divide-y rounded-lg border text-sm">
         {rows.map((r, i) => (
           <li key={i} className="flex items-center justify-between gap-3 px-3 py-1.5">
-            <span>{r.n}{r.note && <span className="ml-1 text-xs text-muted-foreground">({r.note})</span>}{r.eb && <Badge variant="gold" className="ml-2 px-1 py-0 text-[9px]">EQ Brine</Badge>}</span>
+            <span>{r.n}{r.note && <span className="ml-1 text-xs text-muted-foreground">({r.note})</span>}{r.eb && <Badge variant="gold" className="ml-2 px-1 py-0 text-[9px]">{tx("EQ Brine")}</Badge>}</span>
             <span className="font-mono tabular">{r.a}</span>
           </li>
         ))}
@@ -127,26 +128,26 @@ function BrinePanel({ b, s }) {
   const res = hasCure ? core.calcCureResidual({ cureIng: r.cureIng, nitritePpm: r.nitritePpm, nitratePpm: r.nitratePpm }, totalDays, core.DEFAULT_CAVA_TEMP, core.DEFAULT_CAVA_PH) : null;
   return (
     <div className="grid gap-3">
-      <SectionLabel className="mb-0">Equilibrium Brine · sobre {fmtG(meatG)}</SectionLabel>
+      <SectionLabel className="mb-0">{tx("Equilibrium Brine · sobre {0}", [fmtG(meatG)])}</SectionLabel>
       <div className="grid grid-cols-2 gap-3 rounded-lg bg-muted/50 p-3 sm:grid-cols-5">
-        <Metric label={`Sal común (${r.salt.name})`} value={`${fmt(r.commonG, 1)} g`} note={`${fmt(r.commonTsp, 1)} tsp`} />
-        {hasCure && <Metric label={`Sal de cura (${r.cureIng.name})`} value={`${fmt(r.cureG, 2)} g`} note={`${fmt(r.cureTsp, 2)} tsp`} valueClassName="text-gold-ink" />}
-        <Metric label="Agua" value={`${fmt(r.waterG, 0)} g`} />
-        <Metric label="Mezcla total" value={`${fmt(r.totalG, 0)} g`} />
-        <Metric label="Sal final" value={`${fmt(r.finalPct, 2)} %`} valueClassName="text-gold-ink" />
+        <Metric label={txt`Sal común (${r.salt.name})`} value={`${fmt(r.commonG, 1)} g`} note={txt`${fmt(r.commonTsp, 1)} tsp`} />
+        {hasCure && <Metric label={txt`Sal de cura (${r.cureIng.name})`} value={`${fmt(r.cureG, 2)} g`} note={txt`${fmt(r.cureTsp, 2)} tsp`} valueClassName="text-gold-ink" />}
+        <Metric label={tx("Agua")} value={`${fmt(r.waterG, 0)} g`} />
+        <Metric label={tx("Mezcla total")} value={`${fmt(r.totalG, 0)} g`} />
+        <Metric label={tx("Sal final")} value={`${fmt(r.finalPct, 2)} %`} valueClassName="text-gold-ink" />
       </div>
       {hasCure && (
         <div className="flex flex-wrap gap-2">
-          <Badge variant={LEVEL_VARIANT[r.cureLevel]}>Nitrito {fmt(r.nitritePpm, 0)} ppm <span className="opacity-70">/ máx {core.NITRITE_MAX_PPM}</span></Badge>
-          {r.nitratePpm > 0 && <Badge variant={r.nitratePpm > core.NITRATE_MAX_PPM ? 'danger' : r.nitratePpm > 1500 ? 'warning' : 'success'}>Nitrato {fmt(r.nitratePpm, 0)} ppm <span className="opacity-70">/ máx {core.NITRATE_MAX_PPM}</span></Badge>}
-          <Badge variant="info">Dosis {br.cureSalt.gPerKg} g/kg <span className="opacity-70">/ máx {r.cureIng.maxGPerKg || 4}</span></Badge>
+          <Badge variant={LEVEL_VARIANT[r.cureLevel]}>{tx("Nitrito {0} ppm", [fmt(r.nitritePpm, 0)])}{' '}<span className="opacity-70">{tx("/ máx {0}", [core.NITRITE_MAX_PPM])}</span></Badge>
+          {r.nitratePpm > 0 && <Badge variant={r.nitratePpm > core.NITRATE_MAX_PPM ? 'danger' : r.nitratePpm > 1500 ? 'warning' : 'success'}>{tx("Nitrato {0} ppm", [fmt(r.nitratePpm, 0)])}{' '}<span className="opacity-70">{tx("/ máx {0}", [core.NITRATE_MAX_PPM])}</span></Badge>}
+          <Badge variant="info">{tx("Dosis {0} g/kg", [br.cureSalt.gPerKg])}{' '}<span className="opacity-70">{tx("/ máx {0}", [r.cureIng.maxGPerKg || 4])}</span></Badge>
         </div>
       )}
-      {r.cureLevel === 'red' && <Alert variant="danger"><Skull /><AlertDescription><b>Peligro sanitario:</b> {[r.nitritePpm > core.NITRITE_MAX_PPM && `nitrito ${fmt(r.nitritePpm, 0)} ppm supera el límite USDA (${core.NITRITE_MAX_PPM})`, r.nitratePpm > core.NITRATE_MAX_PPM && `nitrato ${fmt(r.nitratePpm, 0)} ppm supera el límite USDA (${core.NITRATE_MAX_PPM})`, r.cureG > r.maxCureG && 'la dosis supera el máximo del fabricante'].filter(Boolean).join(' · ')}. Reducí la sal de cura antes de aplicar.</AlertDescription></Alert>}
-      {r.cureLevel === 'yellow' && <Alert variant="warning"><TriangleAlert /><AlertDescription>Nitrito elevado ({fmt(r.nitritePpm, 0)} ppm): legal pero por encima del objetivo típico (≤{core.NITRITE_TARGET_PPM} ppm).</AlertDescription></Alert>}
-      {r.cureLevel === 'green' && <Alert variant="success"><CircleCheck /><AlertDescription>Nitrito seguro: {fmt(r.nitritePpm, 0)} ppm (objetivo ≤{core.NITRITE_TARGET_PPM}, máx {core.NITRITE_MAX_PPM}).</AlertDescription></Alert>}
+      {r.cureLevel === 'red' && <Alert variant="danger"><Skull /><AlertDescription><b>{tx("Peligro sanitario:")}</b> {tx("{0}. Reducí la sal de cura antes de aplicar.", [[r.nitritePpm > core.NITRITE_MAX_PPM && txt`nitrito ${fmt(r.nitritePpm, 0)} ppm supera el límite USDA (${core.NITRITE_MAX_PPM})`, r.nitratePpm > core.NITRATE_MAX_PPM && txt`nitrato ${fmt(r.nitratePpm, 0)} ppm supera el límite USDA (${core.NITRATE_MAX_PPM})`, r.cureG > r.maxCureG && tx('la dosis supera el máximo del fabricante')].filter(Boolean).join(' · ')])}</AlertDescription></Alert>}
+      {r.cureLevel === 'yellow' && <Alert variant="warning"><TriangleAlert /><AlertDescription>{tx("Nitrito elevado ({0} ppm): legal pero por encima del objetivo típico (≤{1} ppm).", [fmt(r.nitritePpm, 0), core.NITRITE_TARGET_PPM])}</AlertDescription></Alert>}
+      {r.cureLevel === 'green' && <Alert variant="success"><CircleCheck /><AlertDescription>{tx("Nitrito seguro: {0} ppm (objetivo ≤{1}, máx {2}).", [fmt(r.nitritePpm, 0), core.NITRITE_TARGET_PPM, core.NITRITE_MAX_PPM])}</AlertDescription></Alert>}
       {res && <Residual res={res} totalDays={totalDays} nit={r.nitritePpm} nat={r.nitratePpm} />}
-      <p className="text-xs text-muted-foreground">Sal total = (carne + agua) × %/100; la sal común compensa el NaCl que aporta la sal de cura. Mezclar, empacar al vacío, refrigerar a 1–4 °C y voltear cada 12 h.</p>
+      <p className="text-xs text-muted-foreground">{tx("Sal total = (carne + agua) × %/100; la sal común compensa el NaCl que aporta la sal de cura. Mezclar, empacar al vacío, refrigerar a 1–4 °C y voltear cada 12 h.")}</p>
     </div>
   );
 }
@@ -165,23 +166,23 @@ function Residual({ res, totalDays, nit, nat }) {
   return (
     <div className="rounded-lg border p-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="text-sm font-medium">Degradación durante el proceso</span>
-        <span className="text-[11px] text-muted-foreground">Modelo Nordin @ {res.tempC} °C, pH {res.ph} · {totalDays} días</span>
+        <span className="text-sm font-medium">{tx("Degradación durante el proceso")}</span>
+        <span className="text-[11px] text-muted-foreground">{tx("Modelo Nordin @ {0} °C, pH {1} · {2} días", [res.tempC, res.ph, totalDays])}</span>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Metric label="Nitrito inicial" value={`${fmt(nit, 0)} ppm`} valueClassName="text-muted-foreground" />
-        <Metric label="Nitrito residual" value={`${fmt(res.residualNitrite, 1)} ppm`} note={`−${fmt(res.reductionNitrite, 0)}% · t½ ${fmt(res.halfLifeNitrite, 0)} d`} valueClassName={`text-${level}`} />
-        {nat > 0 && <Metric label="Nitrato inicial" value={`${fmt(nat, 0)} ppm`} valueClassName="text-muted-foreground" />}
-        {nat > 0 && <Metric label="Nitrato residual" value={`${fmt(res.residualNitrate, 1)} ppm`} note={`−${fmt(res.reductionNitrate, 0)}% · t½ ${fmt(res.halfLifeNitrate, 0)} d`} valueClassName={natOk ? 'text-success' : 'text-warning'} />}
+        <Metric label={tx("Nitrito inicial")} value={`${fmt(nit, 0)} ppm`} valueClassName="text-muted-foreground" />
+        <Metric label={tx("Nitrito residual")} value={`${fmt(res.residualNitrite, 1)} ppm`} note={`−${fmt(res.reductionNitrite, 0)}% · t½ ${fmt(res.halfLifeNitrite, 0)} d`} valueClassName={`text-${level}`} />
+        {nat > 0 && <Metric label={tx("Nitrato inicial")} value={`${fmt(nat, 0)} ppm`} valueClassName="text-muted-foreground" />}
+        {nat > 0 && <Metric label={tx("Nitrato residual")} value={`${fmt(res.residualNitrate, 1)} ppm`} note={`−${fmt(res.reductionNitrate, 0)}% · t½ ${fmt(res.halfLifeNitrate, 0)} d`} valueClassName={natOk ? 'text-success' : 'text-warning'} />}
       </div>
-      <svg viewBox={`0 0 ${w} ${h}`} className="mt-3 h-auto w-full" role="img" aria-label="Curva de nitrito residual">
+      <svg viewBox={`0 0 ${w} ${h}`} className="mt-3 h-auto w-full" role="img" aria-label={tx("Curva de nitrito residual")}>
         {[0, 0.25, 0.5, 0.75, 1].map((f) => <g key={f}><line x1={pad.l} x2={w - pad.r} y1={y(yMax * f)} y2={y(yMax * f)} stroke="var(--border)" strokeWidth="0.6" /><text x={pad.l - 4} y={y(yMax * f) + 3} textAnchor="end" fontSize="8.5" fill="var(--muted-foreground)" fontFamily="JetBrains Mono">{(yMax * f).toFixed(0)}</text></g>)}
         <line x1={x(totalDays)} x2={x(totalDays)} y1={pad.t} y2={h - pad.b} stroke="var(--gold)" strokeDasharray="3 2" />
         <text x={x(totalDays)} y={h - 6} textAnchor="middle" fontSize="9" fill="var(--gold-ink)" fontFamily="JetBrains Mono">{totalDays} d</text>
         <path d={'M ' + pts.map((p) => `${x(p.d).toFixed(1)},${y(p.nit).toFixed(1)}`).join(' L ')} fill="none" stroke="var(--s-ado)" strokeWidth="1.8" />
         {nat > 0 && <path d={'M ' + pts.map((p) => `${x(p.d).toFixed(1)},${y(p.nat).toFixed(1)}`).join(' L ')} fill="none" stroke="var(--success)" strokeWidth="1.6" strokeDasharray="4 2" />}
-        <text x={w - pad.r - 4} y={pad.t + 10} textAnchor="end" fontSize="9" fill="var(--s-ado)" fontFamily="JetBrains Mono">NO₂⁻</text>
-        {nat > 0 && <text x={w - pad.r - 4} y={pad.t + 21} textAnchor="end" fontSize="9" fill="var(--success)" fontFamily="JetBrains Mono">NO₃⁻</text>}
+        <text x={w - pad.r - 4} y={pad.t + 10} textAnchor="end" fontSize="9" fill="var(--s-ado)" fontFamily="JetBrains Mono">{tx("NO₂⁻")}</text>
+        {nat > 0 && <text x={w - pad.r - 4} y={pad.t + 21} textAnchor="end" fontSize="9" fill="var(--success)" fontFamily="JetBrains Mono">{tx("NO₃⁻")}</text>}
       </svg>
     </div>
   );
@@ -193,23 +194,23 @@ function InoculantPanel({ b, s }) {
   const sc = ing ? core.scaleInoculant(ing, totalKg) : null;
   return (
     <div>
-      <SectionLabel>Inoculación</SectionLabel>
+      <SectionLabel>{tx("Inoculación")}</SectionLabel>
       <div className="rounded-lg border border-success/30 bg-success-soft/30 p-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-2"><span className="flex items-center gap-1.5 font-medium text-success"><Sparkles className="size-4" />{s.inoc.i}</span><span className="text-xs text-muted-foreground">{fmt(totalKg, 2)} kg ({fmt(totalKg / core.LB_TO_KG, 2)} lb)</span></div>
+        <div className="flex flex-wrap items-baseline justify-between gap-2"><span className="flex items-center gap-1.5 font-medium text-success"><Sparkles className="size-4" />{s.inoc.i}</span><span className="text-xs text-muted-foreground">{tx("{0} kg ({1} lb)", [fmt(totalKg, 2), fmt(totalKg / core.LB_TO_KG, 2)])}</span></div>
         {sc ? (
           <>
-            <p className="mt-2 text-sm">Rehidratá <b>{core.fmtFrac(sc.starterTsp)} cucharadita{sc.starterTsp >= 1.5 ? 's' : ''}</b> de starter en <b>{fmt(sc.waterMl, 0)} ml</b> de agua destilada durante <b>{sc.rehydMin} min</b>.</p>
+            <p className="mt-2 text-sm">{tx("Rehidratá")}{' '}<b>{tx("{0} cucharadita{1}", [core.fmtFrac(sc.starterTsp), sc.starterTsp >= 1.5 ? 's' : ''])}</b>{' '}{tx("de starter en")}{' '}<b>{tx("{0} ml", [fmt(sc.waterMl, 0)])}</b>{' '}{tx("de agua destilada durante")}{' '}<b>{tx("{0} min", [sc.rehydMin])}</b>.</p>
             <div className="mt-3 grid grid-cols-3 gap-3">
-              <Metric label="Cultivo" value={`${core.fmtFrac(sc.starterTsp)} tsp`} note={`${fmt(sc.starterMl, 1)} ml`} />
-              <Metric label="Agua no clorada" value={`${fmt(sc.waterMl, 0)} ml`} note={`${core.fmtFrac(sc.waterCups)} cup`} />
-              <Metric label="Rehidratar" value={`${sc.rehydMin} min`} note="temp. ambiente" />
+              <Metric label={tx("Cultivo")} value={`${core.fmtFrac(sc.starterTsp)} tsp`} note={txt`${fmt(sc.starterMl, 1)} ml`} />
+              <Metric label={tx("Agua no clorada")} value={`${fmt(sc.waterMl, 0)} ml`} note={txt`${core.fmtFrac(sc.waterCups)} cup`} />
+              <Metric label={tx("Rehidratar")} value={`${sc.rehydMin} min`} note={tx("temp. ambiente")} />
             </div>
-            <p className="mt-2 text-[11px] text-muted-foreground">Base: {core.fmtFrac(sc.tspPer5lb)} tsp + {fmt(sc.mlPer5lb, 0)} ml por cada 2,27 kg (5 lb).</p>
+            <p className="mt-2 text-[11px] text-muted-foreground">{tx("Base: {0} tsp + {1} ml por cada 2,27 kg (5 lb).", [core.fmtFrac(sc.tspPer5lb), fmt(sc.mlPer5lb, 0)])}</p>
           </>
         ) : (
           <>
-            <div className="mt-3 grid grid-cols-3 gap-3"><Metric label="Cultivo" value={`${fmt(s.inoc.a * totalKg, 3)} g`} /><Metric label="Agua" value={`${fmt(s.inoc.water * totalKg, 1)} ml`} /><Metric label="Activación" value={`${s.inoc.act || 30} min`} /></div>
-            <p className="mt-2 text-[11px] text-warning">Este cultivo no tiene datos de rehidratación: completalos en Ingredientes.</p>
+            <div className="mt-3 grid grid-cols-3 gap-3"><Metric label={tx("Cultivo")} value={`${fmt(s.inoc.a * totalKg, 3)} g`} /><Metric label={tx("Agua")} value={`${fmt(s.inoc.water * totalKg, 1)} ml`} /><Metric label={tx("Activación")} value={`${s.inoc.act || 30} min`} /></div>
+            <p className="mt-2 text-[11px] text-warning">{tx("Este cultivo no tiene datos de rehidratación: completalos en Ingredientes.")}</p>
           </>
         )}
       </div>
@@ -222,12 +223,12 @@ function SmokePanel({ s }) {
   const range = core.SMOKE_RANGES[cat];
   return (
     <div>
-      <SectionLabel>Ahumado</SectionLabel>
+      <SectionLabel>{tx("Ahumado")}</SectionLabel>
       <div className="grid grid-cols-2 gap-3 rounded-lg bg-muted/50 p-3 sm:grid-cols-[auto_auto_1fr]">
-        <Metric label="Tiempo" value={`${s.smoke.hours || 0} h`} />
-        <Metric label="Temperatura" value={`${s.smoke.tempC || 0} °C`} note={range.label} />
-        <div className="col-span-2 sm:col-span-1"><div className="text-[11px] font-medium text-muted-foreground">Maderas</div>
-          <div className="mt-1 flex flex-wrap gap-1">{(s.smoke.woods || []).length ? s.smoke.woods.map((nm) => { const wd = core.SMOKE_WOODS.find((x) => x.es === nm || x.en === nm); return <Badge key={nm} variant="outline" title={wd?.note}>{wd?.es || nm}</Badge>; }) : <span className="text-xs text-muted-foreground">Sin definir</span>}</div>
+        <Metric label={tx("Tiempo")} value={`${s.smoke.hours || 0} h`} />
+        <Metric label={tx("Temperatura")} value={`${s.smoke.tempC || 0} °C`} note={range.label} />
+        <div className="col-span-2 sm:col-span-1"><div className="text-[11px] font-medium text-muted-foreground">{tx("Maderas")}</div>
+          <div className="mt-1 flex flex-wrap gap-1">{(s.smoke.woods || []).length ? s.smoke.woods.map((nm) => { const wd = core.SMOKE_WOODS.find((x) => x.es === nm || x.en === nm); return <Badge key={nm} variant="outline" title={wd?.note}>{tx(wd?.es || nm)}</Badge>; }) : <span className="text-xs text-muted-foreground">{tx("Sin definir")}</span>}</div>
         </div>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">{range.note}</p>
@@ -243,13 +244,13 @@ function PhPanel({ b, s, idx }) {
   const val = (v, l) => has(v) ? <Badge variant={LEVEL_VARIANT[l]} className="h-7 px-2.5 font-mono text-sm">{l === 'alert' && <Skull />}{v}</Badge> : <span className="font-mono text-muted-foreground">—</span>;
   return (
     <div>
-      <SectionLabel action={<Button size="sm" variant="outline" className="h-7" onClick={() => openDialog('ph', { batchId: b.id, idx })}><FlaskConical /> Registrar pH</Button>}>Control de pH</SectionLabel>
+      <SectionLabel action={<Button size="sm" variant="outline" className="h-7" onClick={() => openDialog('ph', { batchId: b.id, idx })}><FlaskConical />{' '}{tx("Registrar pH")}</Button>}>{tx("Control de pH")}</SectionLabel>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <div className="grid gap-1"><span className="text-[11px] text-muted-foreground">pH inicial</span>{val(log?.phStart, lS)}</div>
-        <div className="grid gap-1"><span className="text-[11px] text-muted-foreground">pH final</span>{val(log?.phEnd, lE)}</div>
-        <div className="ml-auto text-xs text-muted-foreground">esperado {s.ph.start} → {s.ph.end} · peligro &lt;{s.ph.dangerLow} o &gt;{s.ph.dangerHigh}</div>
+        <div className="grid gap-1"><span className="text-[11px] text-muted-foreground">{tx("pH inicial")}</span>{val(log?.phStart, lS)}</div>
+        <div className="grid gap-1"><span className="text-[11px] text-muted-foreground">{tx("pH final")}</span>{val(log?.phEnd, lE)}</div>
+        <div className="ml-auto text-xs text-muted-foreground">{tx("esperado {0} → {1} · peligro <{2} o >{3}", [s.ph.start, s.ph.end, s.ph.dangerLow, s.ph.dangerHigh])}</div>
       </div>
-      {hazard && <Alert variant="danger" className="mt-3"><Skull /><AlertDescription><b>Peligro sanitario:</b> pH fuera del rango seguro ({s.ph.dangerLow}–{s.ph.dangerHigh}). Evaluá descarte o corrección inmediata.</AlertDescription></Alert>}
+      {hazard && <Alert variant="danger" className="mt-3"><Skull /><AlertDescription><b>{tx("Peligro sanitario:")}</b>{' '}{tx("pH fuera del rango seguro ({0}–{1}). Evaluá descarte o corrección inmediata.", [s.ph.dangerLow, s.ph.dangerHigh])}</AlertDescription></Alert>}
     </div>
   );
 }

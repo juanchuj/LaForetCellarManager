@@ -1,6 +1,7 @@
 /* One dialog open at a time (same model as the legacy showModal/closeModal).
  * Legacy openers routed through the bridge land here. */
 import { useSyncExternalStore } from 'react';
+import { sourceOf } from '@/lib/i18n';
 
 let current = null; // { name, props, key }
 let seq = 0;
@@ -46,7 +47,7 @@ export function ask(fn, { destructive } = {}) {
   const r = fn();
   if (captured) {
     const message = captured; captured = null;
-    confirmState = { message, destructive: destructive ?? /eliminar|borra|descartar|reemplaz/i.test(message),
+    confirmState = { message, destructive: destructive ?? /eliminar|borra|descartar|reemplaz/i.test(sourceOf(String(message))),
       onOk: () => { mode = 'yes'; try { fn(); } finally { mode = 'capture'; } } };
     cEmit();
   }

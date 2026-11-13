@@ -4,6 +4,7 @@
  * UI side effects (render, toast, modals, navigation) go through ./bridge.js. */
 /* eslint-disable */
 import { bridge } from './bridge.js';
+import { __t, __tt, LOCALE as __LOC } from '../i18n.js';
 const render = (...a) => bridge.render(...a);
 const toast = (...a) => bridge.toast(...a);
 const closeModal = (...a) => bridge.closeModal(...a);
@@ -63,15 +64,15 @@ const EB_TABLE = [
 ];
 
 const STAGE_TYPES = [
-  {k:'Curado',    label:'Curado (Eq. Brine)',     recipe:'required',  press:true,  ph:false, env:false, note:'Sal y receta al vacío; días según grosor.'},
-  {k:'Salmuera',  label:'Salmuera (líquida)',     recipe:'required',  press:false, ph:false, env:false, note:'Salmuera líquida clásica.'},
-  {k:'Salazon',   label:'Salazón (sólida)',       recipe:'required',  press:false, ph:false, env:false, note:'Cubierta en sal seca.'},
-  {k:'Adobado',   label:'Adobado',                recipe:'required',  press:false, ph:true,  env:false, note:'Reposo con ingredientes; control pH.'},
-  {k:'Fermentado',label:'Fermentado',             recipe:'optional',  press:false, ph:true,  env:true,  note:'Temp/humedad + pH; inoculante.'},
-  {k:'Secado',    label:'Secado',                 recipe:'optional',  press:true,  ph:false, env:true,  note:'Cava; pérdida de humedad hasta % objetivo.'},
-  {k:'Balanceo',  label:'Balanceo',               recipe:'none',      press:false, ph:false, env:true,  note:'Al vacío en cava para homogeneizar.'},
-  {k:'Madurado',  label:'Madurado',               recipe:'optional',  press:false, ph:false, env:true,  note:'Complejizar sabores; largo plazo.'},
-  {k:'Ahumado',   label:'Ahumado',                recipe:'none',      press:false, ph:false, env:false, note:'Ahumado en frio o en caliente con maderas seleccionadas.'},
+  {k:'Curado',    label:__t('Curado (Eq. Brine)'),     recipe:'required',  press:true,  ph:false, env:false, note:__t('Sal y receta al vacío; días según grosor.')},
+  {k:'Salmuera',  label:__t('Salmuera (líquida)'),     recipe:'required',  press:false, ph:false, env:false, note:__t('Salmuera líquida clásica.')},
+  {k:'Salazon',   label:__t('Salazón (sólida)'),       recipe:'required',  press:false, ph:false, env:false, note:__t('Cubierta en sal seca.')},
+  {k:'Adobado',   label:__t('Adobado'),                recipe:'required',  press:false, ph:true,  env:false, note:__t('Reposo con ingredientes; control pH.')},
+  {k:'Fermentado',label:__t('Fermentado'),             recipe:'optional',  press:false, ph:true,  env:true,  note:__t('Temp/humedad + pH; inoculante.')},
+  {k:'Secado',    label:__t('Secado'),                 recipe:'optional',  press:true,  ph:false, env:true,  note:__t('Cava; pérdida de humedad hasta % objetivo.')},
+  {k:'Balanceo',  label:__t('Balanceo'),               recipe:'none',      press:false, ph:false, env:true,  note:__t('Al vacío en cava para homogeneizar.')},
+  {k:'Madurado',  label:__t('Madurado'),               recipe:'optional',  press:false, ph:false, env:true,  note:__t('Complejizar sabores; largo plazo.')},
+  {k:'Ahumado',   label:__t('Ahumado'),                recipe:'none',      press:false, ph:false, env:false, note:__t('Ahumado en frio o en caliente con maderas seleccionadas.')},
 ];
 
 const STAGE_MAP = Object.fromEntries(STAGE_TYPES.map(s => [s.k, s]));
@@ -89,9 +90,9 @@ const SMOKE_WOODS = [
 ];
 
 const SMOKE_RANGES = {
-  cold: { min: 15, max: 30, label:'Ahumado en frio', note:'No cocina la carne. Requiere pre-cura. Ideal para prosciutto, speck, salmon.'},
-  warm: { min: 30, max: 60, label:'Ahumado tibio',   note:'Coccion muy lenta. Ideal para pescados delicados.'},
-  hot:  { min: 60, max: 120, label:'Ahumado caliente', note:'Cocina la carne. Ideal para costillas, brisket, aves.'}
+  cold: { min: 15, max: 30, label:__t('Ahumado en frio'), note:__t('No cocina la carne. Requiere pre-cura. Ideal para prosciutto, speck, salmon.')},
+  warm: { min: 30, max: 60, label:__t('Ahumado tibio'),   note:__t('Coccion muy lenta. Ideal para pescados delicados.')},
+  hot:  { min: 60, max: 120, label:__t('Ahumado caliente'), note:__t('Cocina la carne. Ideal para costillas, brisket, aves.')}
 };
 
 function smokeCategoryFor(tempC){
@@ -305,11 +306,11 @@ function defaultSaltName(){
 }
 
 const BRINE_PRESETS = [
-  { pct:1.0,  label:'1.0% · Delicado (aves, pescado)' },
-  { pct:1.5,  label:'1.5% · Ligero (pechuga de pollo)' },
-  { pct:2.0,  label:'2.0% · Estándar (cerdo, res)' },
-  { pct:2.5,  label:'2.5% · Intenso (cortes duros, tope de sabor)' },
-  { pct:3.0,  label:'3.0% · Solo curado (preservación)' },
+  { pct:1.0,  label:__t('1.0% · Delicado (aves, pescado)') },
+  { pct:1.5,  label:__t('1.5% · Ligero (pechuga de pollo)') },
+  { pct:2.0,  label:__t('2.0% · Estándar (cerdo, res)') },
+  { pct:2.5,  label:__t('2.5% · Intenso (cortes duros, tope de sabor)') },
+  { pct:3.0,  label:__t('3.0% · Solo curado (preservación)') },
 ];
 
 function calcEqBrine(meatG, saltPct, waterPct, saltName, cureBrine){
@@ -594,7 +595,7 @@ function loadExampleRecipe(){
   });
   if(typeof migrateBaseMeat==='function') migrateBaseMeat();
   saveDB(); render();
-  toast('Receta de ejemplo cargada: Lomo Español');
+  toast(__t('Receta de ejemplo cargada: Lomo Español'));
 }
 
 function exportDB(){
@@ -603,7 +604,7 @@ function exportDB(){
   a.href = URL.createObjectURL(blob);
   a.download = 'laforet_'+new Date().toISOString().slice(0,10)+'.json';
   a.click();
-  toast('Base de datos exportada');
+  toast(__t('Base de datos exportada'));
 }
 
 function exportLibrary(scope){
@@ -624,16 +625,16 @@ function exportLibrary(scope){
   a.download = `laforet_${labels[scope]}_${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   const parts = [];
-  if(payload.types) parts.push(`${payload.types.length} recetas`);
-  if(payload.ingredients) parts.push(`${payload.ingredients.length} ingredientes`);
-  toast(`Exportado: ${parts.join(' · ')}`);
+  if(payload.types) parts.push(__tt`${payload.types.length} recetas`);
+  if(payload.ingredients) parts.push(__tt`${payload.ingredients.length} ingredientes`);
+  toast(__tt`Exportado: ${parts.join(' · ')}`);
 }
 
 function applyLibraryImport(payload){
   // Acepta biblioteca completa, solo-ingredientes, solo-recetas, o un export completo de DB
   const srcIngs  = payload.ingredients || [];
   const srcTypes = payload.types || [];
-  if(!srcIngs.length && !srcTypes.length){ toast('El archivo no contiene recetas ni ingredientes'); return; }
+  if(!srcIngs.length && !srcTypes.length){ toast(__t('El archivo no contiene recetas ni ingredientes')); return; }
   let ingNew = 0, ingUpd = 0, typNew = 0, typUpd = 0;
 
   // Merge ingredientes por nombre: actualiza campos, conserva id local
@@ -684,11 +685,11 @@ function applyLibraryImport(payload){
   if(typeof migrateBaseMeat==='function') migrateBaseMeat();
   saveDB(); render();
   const parts = [];
-  if(srcTypes.length) parts.push(`${typNew} recetas nuevas, ${typUpd} actualizadas`);
-  if(srcIngs.length) parts.push(`${ingNew} ingredientes nuevos, ${ingUpd} actualizados`);
+  if(srcTypes.length) parts.push(__tt`${typNew} recetas nuevas, ${typUpd} actualizadas`);
+  if(srcIngs.length) parts.push(__tt`${ingNew} ingredientes nuevos, ${ingUpd} actualizados`);
   let msg = `✓ ${parts.join(' · ')}`;
   if(missing.length){
-    msg += ` · ⚠ ${missing.length} ingrediente${missing.length===1?'':'s'} sin catálogo: ${missing.slice(0,4).join(', ')}${missing.length>4?'…':''}`;
+    msg += __tt` · ⚠ ${missing.length} ingrediente${missing.length===1?'':'s'} sin catálogo: ${missing.slice(0,4).join(', ')}${missing.length>4?'…':''}`;
   }
   toast(msg);
 }
@@ -709,15 +710,15 @@ function restoreSalts(){
   });
   saveDB(); render();
   if(added||patched){
-    toast(`Sales repuestas: ${added} nueva${added===1?'':'s'}${patched?`, ${patched} con densidad`:''}`);
+    toast(__tt`Sales repuestas: ${added} nueva${added===1?'':'s'}${patched?__tt`, ${patched} con densidad`:''}`);
   } else {
-    toast('Todas las sales ya estaban presentes');
+    toast(__t('Todas las sales ya estaban presentes'));
   }
 }
 
 function resetDB(){
-  if(!__confirm('Esto BORRA todo: ingredientes, recetas y lotes. La app queda en blanco. Se perderán lotes y ediciones. ¿Continuar?')) return;
-  seedDB(); render(); toast('Datos borrados — app en blanco. Importá tu Biblioteca JSON o creá desde cero.');
+  if(!__confirm(__t('Esto BORRA todo: ingredientes, recetas y lotes. La app queda en blanco. Se perderán lotes y ediciones. ¿Continuar?'))) return;
+  seedDB(); render(); toast(__t('Datos borrados — app en blanco. Importá tu Biblioteca JSON o creá desde cero.'));
 }
 
 const AW_TARGET_BY_CATEGORY = {
@@ -854,7 +855,7 @@ function awTxt(st, short){
   if(!st || st.aw==null) return '—';
   return st.source==='medido'
     ? `${st.aw.toFixed(3)}${short?'':' (medido)'}`
-    : `≈ ${st.aw.toFixed(3)} ± ${st.unc.toFixed(2)}${short?' est.':' (estimado, no medido)'}`;
+    : `≈ ${st.aw.toFixed(3)} ± ${st.unc.toFixed(2)}${short?' est.':__t(' (estimado, no medido)')}`;
 }
 
 function targetWeightForAwPiece(b, piece, awTarget){
@@ -888,38 +889,38 @@ function safetyStatus(b, piece){
     const hac = evaluateHaccp(b);
     const failing = hac.results.find(r=>r.status==='fail' && r.pcc.severity==='critical') || hac.results.find(r=>r.status==='fail');
     if(hac.summary.criticalFails > 0){
-      haccpBlock = `${hac.summary.criticalFails} PCC crítico violado`;
+      haccpBlock = __tt`${hac.summary.criticalFails} PCC crítico violado`;
     } else if(hac.summary.fail > 0){
-      haccpBlock = `${hac.summary.fail} PCC violado`;
+      haccpBlock = __tt`${hac.summary.fail} PCC violado`;
     }
     if(haccpBlock && failing) haccpWhy = `${failing.pcc.label} — ${failing.detail}`;
     haccpAccepted = hac.summary.accepted || 0;
     haccpDoc = (hac.summary.documented || 0) - haccpAccepted;
   }
   const base = { aw, awTarget, saltPct, haccpBlock, haccpWhy, awSource, awUnc: ast.unc };
-  const awLbl = awSource==='medido' ? `aw ${aw!=null?aw.toFixed(3):''} (medido)` : `aw ≈ ${aw!=null?aw.toFixed(3):''} est.`;
+  const awLbl = awSource==='medido' ? __tt`aw ${aw!=null?aw.toFixed(3):''} (medido)` : __tt`aw ≈ ${aw!=null?aw.toFixed(3):''} est.`;
   if(aw === null){
-    return { ...base, ready:false, label:'Sin registro de peso', level:'gray' };
+    return { ...base, ready:false, label:__t('Sin registro de peso'), level:'gray' };
   }
   if(haccpBlock){
-    return { ...base, ready:false, label:`BLOQUEADA · ${haccpBlock}`, level:'red' };
+    return { ...base, ready:false, label:__tt`BLOQUEADA · ${haccpBlock}`, level:'red' };
   }
   if(aw <= awTarget && allStagesDone){
-    return { ...base, haccpBlock:null, haccpWhy:null, ready:true, label:`LISTA · ${awLbl}`, level:'green' };
+    return { ...base, haccpBlock:null, haccpWhy:null, ready:true, label:__tt`LISTA · ${awLbl}`, level:'green' };
   }
   if(aw <= awTarget && !allStagesDone){
-    return { ...base, haccpBlock:null, haccpWhy:null, ready:false, label:`aw OK, etapas pendientes`, level:'yellow' };
+    return { ...base, haccpBlock:null, haccpWhy:null, ready:false, label:__tt`aw OK, etapas pendientes`, level:'yellow' };
   }
   if(haccpAccepted > 0 && haccpDoc === 0 && allStagesDone){
-    return { ...base, haccpBlock:null, haccpWhy:null, ready:true, manual:true, label:`LISTA · aceptada manualmente · ${awLbl} (meta ≤ ${awTarget.toFixed(2)})`, level:'green' };
+    return { ...base, haccpBlock:null, haccpWhy:null, ready:true, manual:true, label:__tt`LISTA · aceptada manualmente · ${awLbl} (meta ≤ ${awTarget.toFixed(2)})`, level:'green' };
   }
   if(haccpDoc > 0 || haccpAccepted > 0){
-    return { ...base, haccpBlock:null, haccpWhy:null, ready:false, label:`En secado · desviación documentada · ${awLbl} (meta ≤ ${awTarget.toFixed(2)})`, level:'yellow' };
+    return { ...base, haccpBlock:null, haccpWhy:null, ready:false, label:__tt`En secado · desviación documentada · ${awLbl} (meta ≤ ${awTarget.toFixed(2)})`, level:'yellow' };
   }
   if(aw <= awTarget + 0.01){
-    return { ...base, haccpBlock:null, haccpWhy:null, ready:false, label:`Cerca · ${awLbl} / ${awTarget.toFixed(2)}`, level:'yellow' };
+    return { ...base, haccpBlock:null, haccpWhy:null, ready:false, label:__tt`Cerca · ${awLbl} / ${awTarget.toFixed(2)}`, level:'yellow' };
   }
-  return { ...base, haccpBlock:null, haccpWhy:null, ready:false, label:`NO CONSUMIR AÚN · ${awLbl}`, level:'red' };
+  return { ...base, haccpBlock:null, haccpWhy:null, ready:false, label:__tt`NO CONSUMIR AÚN · ${awLbl}`, level:'red' };
 }
 
 function isWeightSuspicious(piece, newWeightG, newDateISO){
@@ -933,13 +934,13 @@ function isWeightSuspicious(piece, newWeightG, newDateISO){
   const deltaPct = 100 * delta / baselineW;
   // Gain of any amount > 1% is suspect
   if(deltaPct > 1){
-    return { kind:'gain', pct:deltaPct, msg:`Ganancia inusual de ${deltaPct.toFixed(1)}% desde registro previo` };
+    return { kind:'gain', pct:deltaPct, msg:__tt`Ganancia inusual de ${deltaPct.toFixed(1)}% desde registro previo` };
   }
   // Loss > 5% within 24h is suspect
   if(baselineDate){
     const hours = (newDate - baselineDate) / (1000*60*60);
     if(hours > 0 && hours < 24 && deltaPct < -5){
-      return { kind:'fast-loss', pct:deltaPct, hours, msg:`Pérdida de ${Math.abs(deltaPct).toFixed(1)}% en ${hours.toFixed(1)}h — ¿error de báscula?` };
+      return { kind:'fast-loss', pct:deltaPct, hours, msg:__tt`Pérdida de ${Math.abs(deltaPct).toFixed(1)}% en ${hours.toFixed(1)}h — ¿error de báscula?` };
     }
   }
   return null;
@@ -998,7 +999,7 @@ function caseHardeningRisk(b, piece){
   let msg = '';
   if(risk){
     const hrSuggest = Math.min(90, Math.round(stats.avgHR + 10));
-    msg = `Riesgo case hardening (ratio ${ratio.toFixed(2)}) — considera subir HR a ${hrSuggest}%`;
+    msg = __tt`Riesgo case hardening (ratio ${ratio.toFixed(2)}) — considera subir HR a ${hrSuggest}%`;
   }
   return { risk, ratio, vpd, safeVpd, avgT: stats.avgT, avgHR: stats.avgHR, msg };
 }
@@ -1112,7 +1113,7 @@ function evaluateHaccp(b){
     switch(pcc.metric){
       case 'coreT': {
         const t = b.receiving?.coreT;
-        if(t === null || t === undefined){ status = 'pending'; detail = 'Sin core T registrada'; }
+        if(t === null || t === undefined){ status = 'pending'; detail = __t('Sin core T registrada'); }
         else { measured = t; status = (t <= pcc.value) ? 'pass' : 'fail'; detail = `${t}°C ${pcc.op} ${pcc.value}°C`; }
         break;
       }
@@ -1120,49 +1121,49 @@ function evaluateHaccp(b){
         // Peor aw entre piezas (medido si existe, si no estimado) — sin recursión con safetyStatus
         const anyLogged = b.pieces.some(p => (p.weightLogs||[]).length > 0 || awReadings(p).length > 0);
         const allStagesDone = (b.stages||[]).every(s=>s.done);
-        if(!anyLogged){ status='pending'; detail = 'Sin registros de peso aún'; break; }
+        if(!anyLogged){ status='pending'; detail = __t('Sin registros de peso aún'); break; }
         const sts = b.pieces.map(p=>({ p, st: pieceAwState(b, p) })).filter(x=>x.st.aw !== null);
-        if(sts.length === 0){ status = 'pending'; detail = 'Sin aws calculables'; }
+        if(sts.length === 0){ status = 'pending'; detail = __t('Sin aws calculables'); }
         else {
           const worst = sts.reduce((a,x)=> x.st.aw > a.st.aw ? x : a);
           const worstAw = worst.st.aw;
           measured = worstAw;
           const src = `${worst.p.code||'pieza'}`;
           const tx = awTxt(worst.st);
-          if(worstAw <= pcc.value){ status='pass'; detail = `${src}: aw ${tx} ≤ ${pcc.value.toFixed(2)}`; }
-          else if(!allStagesDone){ status='pending'; detail = `${src}: aw ${tx} · en proceso, aún faltan etapas`; }
-          else if(worstAw <= pcc.value + 0.01){ status='warn'; detail = `${src}: aw ${tx} apenas sobre ${pcc.value.toFixed(2)}`; }
-          else { status='fail'; detail = `${src}: aw ${tx} > ${pcc.value.toFixed(2)} con todas las etapas terminadas`; }
+          if(worstAw <= pcc.value){ status='pass'; detail = __tt`${src}: aw ${tx} ≤ ${pcc.value.toFixed(2)}`; }
+          else if(!allStagesDone){ status='pending'; detail = __tt`${src}: aw ${tx} · en proceso, aún faltan etapas`; }
+          else if(worstAw <= pcc.value + 0.01){ status='warn'; detail = __tt`${src}: aw ${tx} apenas sobre ${pcc.value.toFixed(2)}`; }
+          else { status='fail'; detail = __tt`${src}: aw ${tx} > ${pcc.value.toFixed(2)} con todas las etapas terminadas`; }
         }
         break;
       }
       case 'phDropHours': {
         // Did pH drop below 5.3 within pcc.value hours of fermentation start?
         const fermStage = (b.stages||[]).find(s=>s.kind==='Fermentado' && s.startedAt);
-        if(!fermStage){ status = 'pending'; detail = 'Sin etapa de Fermentado'; break; }
+        if(!fermStage){ status = 'pending'; detail = __t('Sin etapa de Fermentado'); break; }
         const start = new Date(fermStage.startedAt).getTime();
         const phLogs = (b.phLogs||[]).filter(l=>l.stageKind==='Fermentado').sort((a,b)=>new Date(a.date)-new Date(b.date));
         const okLog = phLogs.find(l=> l.ph <= 5.3 && (new Date(l.date).getTime() - start)/(1000*60*60) <= pcc.value);
         const hoursSinceStart = (Date.now() - start)/(1000*60*60);
         if(okLog){
           const hrs = (new Date(okLog.date).getTime() - start)/(1000*60*60);
-          measured = hrs; status = 'pass'; detail = `pH ${okLog.ph} alcanzado en ${hrs.toFixed(1)}h`;
+          measured = hrs; status = 'pass'; detail = __tt`pH ${okLog.ph} alcanzado en ${hrs.toFixed(1)}h`;
         } else if(hoursSinceStart >= pcc.value){
-          status = 'fail'; detail = `${hoursSinceStart.toFixed(0)}h transcurridas sin pH ≤ 5.3 — riesgo botulismo`;
+          status = 'fail'; detail = __tt`${hoursSinceStart.toFixed(0)}h transcurridas sin pH ≤ 5.3 — riesgo botulismo`;
         } else {
-          status = 'pending'; detail = `${hoursSinceStart.toFixed(0)}h / ${pcc.value}h · pH pendiente de caer`;
+          status = 'pending'; detail = __tt`${hoursSinceStart.toFixed(0)}h / ${pcc.value}h · pH pendiente de caer`;
         }
         break;
       }
       case 'smokeTemp': {
         const smokeStage = (b.stages||[]).find(s=>s.kind==='Ahumado');
-        if(!smokeStage || !smokeStage.smoke){ status = 'pending'; detail = 'Sin configuración de Ahumado'; break; }
+        if(!smokeStage || !smokeStage.smoke){ status = 'pending'; detail = __t('Sin configuración de Ahumado'); break; }
         const smokeT = smokeStage.smoke.tempC || null;
-        if(smokeT === null){ status = 'pending'; detail = 'Sin T de ahumado definida'; }
+        if(smokeT === null){ status = 'pending'; detail = __t('Sin T de ahumado definida'); }
         else { measured = smokeT; status = (smokeT <= pcc.value) ? 'pass' : 'warn'; detail = `${smokeT}°C ${pcc.op} ${pcc.value}°C`; }
         break;
       }
-      default: status = 'pending'; detail = 'Métrica no reconocida';
+      default: status = 'pending'; detail = __t('Métrica no reconocida');
     }
     // v4.3.3 — una desviación documentada (resuelta o bajo monitoreo) deja de bloquear;
     // «descartado» o «pendiente» siguen bloqueando.
@@ -1172,8 +1173,8 @@ function evaluateHaccp(b){
       if(dev && (dev.outcome==='resolved' || dev.outcome==='monitoring' || dev.outcome==='accepted')){
         status = 'doc';
         detail += dev.outcome==='accepted'
-          ? ` · aceptado manualmente por el productor: ${dev.description}`
-          : ` · desviación ${dev.outcome==='resolved'?'resuelta':'bajo monitoreo'}: ${dev.action||dev.description}`;
+          ? __tt` · aceptado manualmente por el productor: ${dev.description}`
+          : __tt` · desviación ${dev.outcome==='resolved'?'resuelta':__t('bajo monitoreo')}: ${dev.action||dev.description}`;
       }
     }
     return { pcc, status, detail, measured, dev };
@@ -1212,10 +1213,10 @@ function saveDeviation(batchId, pccId, pccLabel){
   const desc = __el('dev-desc').value.trim();
   const action = __el('dev-action').value.trim();
   const outcome = __el('dev-outcome').value;
-  if(!desc){ toast('Describí qué pasó'); return; }
-  if(outcome==='accepted' && desc.length < 10){ toast('Escribí el motivo de la aceptación (mínimo 10 caracteres)'); return; }
+  if(!desc){ toast(__t('Describí qué pasó')); return; }
+  if(outcome==='accepted' && desc.length < 10){ toast(__t('Escribí el motivo de la aceptación (mínimo 10 caracteres)')); return; }
   recordDeviation(batchId, { pccId, pccLabel, description: desc, action, outcome });
-  closeModal(); render(); toast('Desviación registrada');
+  closeModal(); render(); toast(__t('Desviación registrada'));
 }
 
 function diffusivitySaltMeat({tempC=5, fatPct=20}){
@@ -1249,10 +1250,10 @@ function evaluateFickSalt(nb, type){
   if(!daysNeeded) return null;
   const ratio = daysConfigured / daysNeeded;
   let status, msg;
-  if(ratio >= 1.3){ status='excess'; msg = `Curado configurado (${daysConfigured}d) excede ampliamente Fick (${daysNeeded.toFixed(0)}d) — considera reducir`; }
-  else if(ratio >= 1.0){ status='ok'; msg = `Curado ${daysConfigured}d ≥ Fick ${daysNeeded.toFixed(0)}d · penetración al centro OK`; }
-  else if(ratio >= 0.85){ status='warn'; msg = `Curado ${daysConfigured}d está marginal · Fick sugiere ${daysNeeded.toFixed(0)}d para completa penetración`; }
-  else { status='fail'; msg = `⚠ Curado ${daysConfigured}d insuficiente · Fick predice ${daysNeeded.toFixed(0)}d para alcanzar el centro`; }
+  if(ratio >= 1.3){ status='excess'; msg = __tt`Curado configurado (${daysConfigured}d) excede ampliamente Fick (${daysNeeded.toFixed(0)}d) — considera reducir`; }
+  else if(ratio >= 1.0){ status='ok'; msg = __tt`Curado ${daysConfigured}d ≥ Fick ${daysNeeded.toFixed(0)}d · penetración al centro OK`; }
+  else if(ratio >= 0.85){ status='warn'; msg = __tt`Curado ${daysConfigured}d está marginal · Fick sugiere ${daysNeeded.toFixed(0)}d para completa penetración`; }
+  else { status='fail'; msg = __tt`⚠ Curado ${daysConfigured}d insuficiente · Fick predice ${daysNeeded.toFixed(0)}d para alcanzar el centro`; }
   return { daysNeeded, daysConfigured, status, ratio, msg, maxThickness, tempC };
 }
 
@@ -1360,12 +1361,12 @@ function proteolysisIndex({avgTempC, days}){
   return {
     index: idx,
     factor,
-    label: idx < 20 ? 'muy baja (textura firme, poca complejidad)' :
-           idx < 40 ? 'baja (textura firme, aroma simple)' :
-           idx < 70 ? 'media (bresaola / lomo típico)' :
-           idx < 100 ? 'alta (madurada compleja)' :
-           idx < 150 ? 'muy alta (prosciutto largo)' :
-           'extrema (jamón ibérico añejo)'
+    label: idx < 20 ? __t('muy baja (textura firme, poca complejidad)') :
+           idx < 40 ? __t('baja (textura firme, aroma simple)') :
+           idx < 70 ? __t('media (bresaola / lomo típico)') :
+           idx < 100 ? __t('alta (madurada compleja)') :
+           idx < 150 ? __t('muy alta (prosciutto largo)') :
+           __t('extrema (jamón ibérico añejo)')
   };
 }
 
@@ -1385,76 +1386,76 @@ function batchProteolysis(b){
 }
 
 const DEFECT_CATALOG = [
-  { name: 'Case Hardening (acostradura)', visual: 'Costra dura seca en superficie, interior blando/húmedo. Al cortar: anillo oscuro perimetral y centro pálido.',
-    cause: 'HR muy baja o circulación de aire excesiva en Secado inicial. Evaporación superficial supera migración interna. VPD alto para el grosor.',
-    prevent: 'HR 80-85% primeros 10-14 días; después bajar gradualmente a 70-75%. Para piezas >6cm empezar con HR 85%.',
-    action: 'Subir HR a 85-90% por 7-10 días; envolver pieza en tela porosa para rehidratación superficial controlada.' },
-  { name: 'Anillo de Sal (salt ring)', visual: 'Al cortar: banda blanquecina perimetral de sal concentrada, centro sub-salado.',
-    cause: 'Curado insuficiente (sal no llegó al centro). Secado muy rápido lleva sal superficial hacia afuera. Pieza muy gruesa para los días configurados.',
-    prevent: 'Validar días de Curado con Fick (#06) para el grosor. Equilibrium Brine con días suficientes.',
-    action: 'Pieza irrecuperable. Lección: extender Curado para próximos lotes de ese grosor.' },
-  { name: 'Moho malo (verde, negro, azul)', visual: 'Manchas verdes (Penicillium verde), negras (Aspergillus niger), azules o difusas con aspecto polvoso-húmedo, especialmente en cortes y huecos.',
-    cause: 'Contaminación cruzada, higiene insuficiente de cava, HR muy alta sin circulación, falta de competencia de cultivos buenos (P. nalgiovense).',
-    prevent: 'Inocular con P. nalgiovense al inicio para dominio competitivo. Limpieza mensual de cava. Mantener HR <90% con circulación.',
-    action: 'Raspar con paño en salmuera 20% + vinagre, dejar secar al aire. Si persiste o es Aspergillus negro: descartar pieza (micotoxinas).' },
-  { name: 'Rancidez (rancio)', visual: 'Color amarillento en grasa, sabor punzante jabonoso, aroma a pintura.',
-    cause: 'Oxidación de grasas insaturadas. T alta de madurado + exposición a luz/oxígeno. Nitrito insuficiente (es antioxidante).',
-    prevent: 'Mantener T cava <15°C en madurado largo. Cava oscura. Usar InstaCure #1 con 120-150 ppm ingoing. Vacío en reserva.',
-    action: 'Grasa rancia no se recupera. Si solo superficial, recortar y consumir pronto el interior.' },
-  { name: 'Amargor', visual: 'Sabor amargo persistente al centro, especialmente embutidos.',
-    cause: 'Sobre-dosis de cultivo starter (sobre-fermentación). pH baja demasiado por debajo de 5.0. Exceso de pimienta o especias amargas.',
-    prevent: 'Dosis correcta de starter (seguir indicaciones del fabricante). Monitorear pH en fermentación — detener si llega a 5.0.',
-    action: 'Lote comprometido pero seguro. Mezclar con rebanadas más suaves para rescate parcial.' },
-  { name: 'Textura blanda / pastosa', visual: 'Al cortar: pieza se desarma, textura blanda, superficie húmeda al tacto.',
-    cause: 'aw aún alta (>0.93). Proteólisis excesiva por T muy alta en Madurado. Curado o Secado interrumpidos.',
-    prevent: 'Esperar a aw ≤ 0.93 (meta del tipo), idealmente medida. Mantener T Madurado 12-15°C. No interrumpir cadena.',
-    action: 'Devolver a cava con HR 72%, T 13°C y esperar más. Si no se recupera en 30d: descartar.' },
-  { name: 'Sabor jabonoso', visual: 'Aroma y sabor a jabón, especialmente en ácidos grasos oxidados.',
-    cause: 'Hidrólisis de triglicéridos por lipasa + oxidación. Grasa poco fresca al inicio. Larga exposición >20°C.',
-    prevent: 'Carne fresca <48h del sacrificio al Curado. T de cava fría.',
-    action: 'Irrecuperable. Descartar o recortar grasa afectada.' },
-  { name: 'Costra proteica (bloom cristalino)', visual: 'Depósito blanco cristalino superficial que raspa fácil, no es moho.',
-    cause: 'Precipitación de tirosina/aminoácidos por proteólisis avanzada. Normal en jamones muy añejos. No es defecto si va con buen aroma.',
-    prevent: 'No requiere prevención si es por envejecimiento adecuado.',
-    action: 'Cepillar suavemente. Es signo de maduración exitosa — comer y disfrutar.' },
-  { name: 'Oreos (hoyos internos)', visual: 'Al cortar embutidos: cavidades grandes irregulares.',
-    cause: 'Mal embutido (aire atrapado) o producción excesiva de CO2 por bacterias indeseadas durante fermentación.',
-    prevent: 'Embutir con presión constante, pinchar tripa para liberar aire. Dosificar bien el starter.',
-    action: 'Cosmético solo. Comer igual si no hay otros signos de deterioro.' },
-  { name: 'Color pálido / grisáceo', visual: 'Pieza con color apagado, no desarrolla rojo profundo típico curado.',
-    cause: 'Nitrito insuficiente (<80 ppm ingoing). Falta de ácido ascórbico/eritorbato. Carne pobre en mioglobina.',
-    prevent: '120-150 ppm nitrito ingoing. Añadir ascorbato 500 ppm acelera formación de óxido nítrico-mioglobina.',
-    action: 'Cosmético — el curado puede estar funcional. Si aparece gris verdoso: posible contaminación, descartar.' }
+  { name: 'Case Hardening (acostradura)', visual: __t('Costra dura seca en superficie, interior blando/húmedo. Al cortar: anillo oscuro perimetral y centro pálido.'),
+    cause: __t('HR muy baja o circulación de aire excesiva en Secado inicial. Evaporación superficial supera migración interna. VPD alto para el grosor.'),
+    prevent: __t('HR 80-85% primeros 10-14 días; después bajar gradualmente a 70-75%. Para piezas >6cm empezar con HR 85%.'),
+    action: __t('Subir HR a 85-90% por 7-10 días; envolver pieza en tela porosa para rehidratación superficial controlada.') },
+  { name: 'Anillo de Sal (salt ring)', visual: __t('Al cortar: banda blanquecina perimetral de sal concentrada, centro sub-salado.'),
+    cause: __t('Curado insuficiente (sal no llegó al centro). Secado muy rápido lleva sal superficial hacia afuera. Pieza muy gruesa para los días configurados.'),
+    prevent: __t('Validar días de Curado con Fick (#06) para el grosor. Equilibrium Brine con días suficientes.'),
+    action: __t('Pieza irrecuperable. Lección: extender Curado para próximos lotes de ese grosor.') },
+  { name: 'Moho malo (verde, negro, azul)', visual: __t('Manchas verdes (Penicillium verde), negras (Aspergillus niger), azules o difusas con aspecto polvoso-húmedo, especialmente en cortes y huecos.'),
+    cause: __t('Contaminación cruzada, higiene insuficiente de cava, HR muy alta sin circulación, falta de competencia de cultivos buenos (P. nalgiovense).'),
+    prevent: __t('Inocular con P. nalgiovense al inicio para dominio competitivo. Limpieza mensual de cava. Mantener HR <90% con circulación.'),
+    action: __t('Raspar con paño en salmuera 20% + vinagre, dejar secar al aire. Si persiste o es Aspergillus negro: descartar pieza (micotoxinas).') },
+  { name: 'Rancidez (rancio)', visual: __t('Color amarillento en grasa, sabor punzante jabonoso, aroma a pintura.'),
+    cause: __t('Oxidación de grasas insaturadas. T alta de madurado + exposición a luz/oxígeno. Nitrito insuficiente (es antioxidante).'),
+    prevent: __t('Mantener T cava <15°C en madurado largo. Cava oscura. Usar InstaCure #1 con 120-150 ppm ingoing. Vacío en reserva.'),
+    action: __t('Grasa rancia no se recupera. Si solo superficial, recortar y consumir pronto el interior.') },
+  { name: 'Amargor', visual: __t('Sabor amargo persistente al centro, especialmente embutidos.'),
+    cause: __t('Sobre-dosis de cultivo starter (sobre-fermentación). pH baja demasiado por debajo de 5.0. Exceso de pimienta o especias amargas.'),
+    prevent: __t('Dosis correcta de starter (seguir indicaciones del fabricante). Monitorear pH en fermentación — detener si llega a 5.0.'),
+    action: __t('Lote comprometido pero seguro. Mezclar con rebanadas más suaves para rescate parcial.') },
+  { name: 'Textura blanda / pastosa', visual: __t('Al cortar: pieza se desarma, textura blanda, superficie húmeda al tacto.'),
+    cause: __t('aw aún alta (>0.93). Proteólisis excesiva por T muy alta en Madurado. Curado o Secado interrumpidos.'),
+    prevent: __t('Esperar a aw ≤ 0.93 (meta del tipo), idealmente medida. Mantener T Madurado 12-15°C. No interrumpir cadena.'),
+    action: __t('Devolver a cava con HR 72%, T 13°C y esperar más. Si no se recupera en 30d: descartar.') },
+  { name: 'Sabor jabonoso', visual: __t('Aroma y sabor a jabón, especialmente en ácidos grasos oxidados.'),
+    cause: __t('Hidrólisis de triglicéridos por lipasa + oxidación. Grasa poco fresca al inicio. Larga exposición >20°C.'),
+    prevent: __t('Carne fresca <48h del sacrificio al Curado. T de cava fría.'),
+    action: __t('Irrecuperable. Descartar o recortar grasa afectada.') },
+  { name: 'Costra proteica (bloom cristalino)', visual: __t('Depósito blanco cristalino superficial que raspa fácil, no es moho.'),
+    cause: __t('Precipitación de tirosina/aminoácidos por proteólisis avanzada. Normal en jamones muy añejos. No es defecto si va con buen aroma.'),
+    prevent: __t('No requiere prevención si es por envejecimiento adecuado.'),
+    action: __t('Cepillar suavemente. Es signo de maduración exitosa — comer y disfrutar.') },
+  { name: 'Oreos (hoyos internos)', visual: __t('Al cortar embutidos: cavidades grandes irregulares.'),
+    cause: __t('Mal embutido (aire atrapado) o producción excesiva de CO2 por bacterias indeseadas durante fermentación.'),
+    prevent: __t('Embutir con presión constante, pinchar tripa para liberar aire. Dosificar bien el starter.'),
+    action: __t('Cosmético solo. Comer igual si no hay otros signos de deterioro.') },
+  { name: 'Color pálido / grisáceo', visual: __t('Pieza con color apagado, no desarrolla rojo profundo típico curado.'),
+    cause: __t('Nitrito insuficiente (<80 ppm ingoing). Falta de ácido ascórbico/eritorbato. Carne pobre en mioglobina.'),
+    prevent: __t('120-150 ppm nitrito ingoing. Añadir ascorbato 500 ppm acelera formación de óxido nítrico-mioglobina.'),
+    action: __t('Cosmético — el curado puede estar funcional. Si aparece gris verdoso: posible contaminación, descartar.') }
 ];
 
 const CATA_GUIDE = {
-  apariencia:{ how:'Mirá la rebanada con buena luz: color, uniformidad, grasa, huecos, halos.',
-    levels:{1:'Muy mala: gris/verdosa, manchas, huecos grandes o corte deshecho',2:'Mala: color apagado o irregular, halo o mancha visible',3:'Aceptable: color curado típico pero con irregularidades',4:'Buena: rojo/rosado parejo, grasa limpia, corte compacto',5:'Excelente: color profundo y uniforme, grasa limpia, corte perfecto'} },
-  aroma:{ how:'Calidad del aroma: ¿es rico o maluco? Olé la rebanada recién cortada y otra vez a los pocos segundos.',
-    levels:{1:'Muy maluco: defectuoso (rancio, acre, amoníaco, moho malo)',2:'Maluco: notas extrañas o desagradables',3:'Aceptable: limpio pero simple',4:'Rico: agradable (carne curada, especias, nuez)',5:'Muy rico: complejo, limpio y persistente'} },
-  textura:{ how:'Cortala fina y masticá: firmeza, jugosidad, si se pega, se deshace o queda como cuero.',
-    levels:{1:'Mala: pastosa/blanda o dura y seca como cuero',2:'Deficiente: chiclosa, fibrosa o con costra dura',3:'Aceptable: algo firme o algo blanda, se deja comer',4:'Buena: corte limpio, firme y jugosa',5:'Excelente: corta fino, se deshace al masticar, jugosa'} },
-  global:{ how:'Tu impresión total, sumando todo: ¿la venderías o la servirías con orgullo? (escala 0 a 10)',
-    range:v=> v>=9?'Excepcional: de las mejores que has hecho':v>=7?'Buena: la venderías sin reparos':v>=5?'Aceptable: se vende, pero con margen de mejora':v>=3?'Deficiente: solo consumo propio':'Inaceptable: descartar' },
+  apariencia:{ how:__t('Mirá la rebanada con buena luz: color, uniformidad, grasa, huecos, halos.'),
+    levels:{1:__t('Muy mala: gris/verdosa, manchas, huecos grandes o corte deshecho'),2:__t('Mala: color apagado o irregular, halo o mancha visible'),3:__t('Aceptable: color curado típico pero con irregularidades'),4:__t('Buena: rojo/rosado parejo, grasa limpia, corte compacto'),5:__t('Excelente: color profundo y uniforme, grasa limpia, corte perfecto')} },
+  aroma:{ how:__t('Calidad del aroma: ¿es rico o maluco? Olé la rebanada recién cortada y otra vez a los pocos segundos.'),
+    levels:{1:__t('Muy maluco: defectuoso (rancio, acre, amoníaco, moho malo)'),2:__t('Maluco: notas extrañas o desagradables'),3:__t('Aceptable: limpio pero simple'),4:__t('Rico: agradable (carne curada, especias, nuez)'),5:__t('Muy rico: complejo, limpio y persistente')} },
+  textura:{ how:__t('Cortala fina y masticá: firmeza, jugosidad, si se pega, se deshace o queda como cuero.'),
+    levels:{1:__t('Mala: pastosa/blanda o dura y seca como cuero'),2:__t('Deficiente: chiclosa, fibrosa o con costra dura'),3:__t('Aceptable: algo firme o algo blanda, se deja comer'),4:__t('Buena: corte limpio, firme y jugosa'),5:__t('Excelente: corta fino, se deshace al masticar, jugosa')} },
+  global:{ how:__t('Tu impresión total, sumando todo: ¿la venderías o la servirías con orgullo? (escala 0 a 10)'),
+    range:v=> v>=9?__t('Excepcional: de las mejores que has hecho'):v>=7?__t('Buena: la venderías sin reparos'):v>=5?__t('Aceptable: se vende, pero con margen de mejora'):v>=3?__t('Deficiente: solo consumo propio'):__t('Inaceptable: descartar') },
   flavor:{
-    dulce:'Dulzor (azúcar, carne, ahumado). Se nota al inicio y en el final del bocado.',
-    salado:'Sal en el primer bocado y en el retrogusto. Si da sed o te parece insípida, anotalo.',
-    umami:'Profundidad «sabrosa» de carne curada, que se alarga en la boca.',
-    amargo:'Amargor al fondo de la lengua, persistente (especias, sobrefermentación).',
-    acido:'Acidez láctica: picor en los lados de la lengua.',
-    aroma:'Qué tan presente está el aroma al oler la rebanada, sin juzgar si es rico o maluco.'
+    dulce:__t('Dulzor (azúcar, carne, ahumado). Se nota al inicio y en el final del bocado.'),
+    salado:__t('Sal en el primer bocado y en el retrogusto. Si da sed o te parece insípida, anotalo.'),
+    umami:__t('Profundidad «sabrosa» de carne curada, que se alarga en la boca.'),
+    amargo:__t('Amargor al fondo de la lengua, persistente (especias, sobrefermentación).'),
+    acido:__t('Acidez láctica: picor en los lados de la lengua.'),
+    aroma:__t('Qué tan presente está el aroma al oler la rebanada, sin juzgar si es rico o maluco.')
   }
 };
 
-const INT_LEGEND = {1:'No presente',2:'Poco presente',3:'Balanceado',4:'Presente',5:'Muy presente (exceso)'};
+const INT_LEGEND = {1:__t('No presente'),2:__t('Poco presente'),3:__t('Balanceado'),4:__t('Presente'),5:__t('Muy presente (exceso)')};
 
 function intLevelText(noun, v){
   return ({
-    1:`No presente: no se percibe ${noun}`,
-    2:`Poco presente: le falta ${noun}`,
-    3:`Balanceado: ${noun} en su punto`,
-    4:`Presente: se nota ${noun} de más`,
-    5:`Muy presente: exceso de ${noun}`
+    1:__tt`No presente: no se percibe ${noun}`,
+    2:__tt`Poco presente: le falta ${noun}`,
+    3:__tt`Balanceado: ${noun} en su punto`,
+    4:__tt`Presente: se nota ${noun} de más`,
+    5:__tt`Muy presente: exceso de ${noun}`
   })[v];
 }
 
@@ -1465,9 +1466,9 @@ function pillColor(gk, i){
   return ['','red','orange','amber','lime','green'][i];
 }
 
-const QUAL_NAMES = {1:'Muy mala',2:'Mala',3:'Aceptable',4:'Buena',5:'Excelente'};
+const QUAL_NAMES = {1:__t('Muy mala'),2:__t('Mala'),3:__t('Aceptable'),4:__t('Buena'),5:__t('Excelente')};
 
-const QUAL_NAMES_TASTE = {1:'Muy maluco',2:'Maluco',3:'Aceptable',4:'Rico',5:'Muy rico'};
+const QUAL_NAMES_TASTE = {1:__t('Muy maluco'),2:__t('Maluco'),3:__t('Aceptable'),4:__t('Rico'),5:__t('Muy rico')};
 
 function catShortName(gk, v){
   v = +v; if(!v) return '';
@@ -1485,7 +1486,7 @@ function catGuideLine(gk, v){
     const k=gk.slice(4);
     const ax = FLAVOR_AXES.find(f=>f.k===k);
     const noun = k==='aroma' ? 'aroma' : (ax?ax.adj[0]:k);
-    how='Intensidad: '+g.flavor[k]+' 1 = no presente · 3 = balanceado · 5 = exceso.';
+    how=__t('Intensidad: ')+g.flavor[k]+__t(' 1 = no presente · 3 = balanceado · 5 = exceso.');
     if(has) txt=intLevelText(noun, +v);
   }
   else if(g[gk]){ how=g[gk].how; if(has) txt=g[gk].levels[+v]; }
@@ -1495,18 +1496,18 @@ function catGuideLine(gk, v){
 const CATA_PROTOCOL = [
   'Cortá en rebanadas finas y probá a <b>temperatura ambiente</b> (saca la pieza 30 min antes de la nevera).',
   'Orden: <b>apariencia → aroma → textura → sabor → nota global</b>. Anotá antes de conversar con otros catadores.',
-  'Entre muestras tomá agua y un trozo de pan neutro; no catar después de café, picante o cigarrillo.',
+  __t('Entre muestras tomá agua y un trozo de pan neutro; no catar después de café, picante o cigarrillo.'),
   '<b>Intensidad</b> (aroma y sabores) va de 1 a 5: <b>1</b> no presente · <b>2</b> poco presente · <b>3</b> balanceado (lo ideal) · <b>4</b> presente · <b>5</b> muy presente (exceso). Así un 2 es «le falta» y un 4–5 es «se pasó».',
   'El <b>aroma</b> se evalúa en dos cosas: su <b>intensidad</b> (qué tan presente) y su <b>calidad</b> (si es maluco o rico).',
-  'Si dudás entre dos valores, elegí el menor y dejá una nota. Cata a ciegas junto a otro lote del mismo tipo es lo más fiable.'
+  __t('Si dudás entre dos valores, elegí el menor y dejá una nota. Cata a ciegas junto a otro lote del mismo tipo es lo más fiable.')
 ];
 
 const FLAVOR_AXES = [
-  {k:'dulce',label:'Dulce',adj:['dulce','poco dulce','demasiado dulce']},
-  {k:'salado',label:'Salado',adj:['sal','poca sal','demasiada sal']},
-  {k:'umami',label:'Umami',adj:['umami','poco umami','demasiado umami']},
-  {k:'amargo',label:'Amargo',adj:['amargor','poco amargor','demasiado amargor']},
-  {k:'acido',label:'Ácido',adj:['acidez','poca acidez','demasiada acidez']}
+  {k:'dulce',label:__t('Dulce'),adj:['dulce',__t('poco dulce'),__t('demasiado dulce')]},
+  {k:'salado',label:__t('Salado'),adj:['sal',__t('poca sal'),__t('demasiada sal')]},
+  {k:'umami',label:__t('Umami'),adj:['umami',__t('poco umami'),__t('demasiado umami')]},
+  {k:'amargo',label:__t('Amargo'),adj:['amargor',__t('poco amargor'),__t('demasiado amargor')]},
+  {k:'acido',label:__t('Ácido'),adj:['acidez',__t('poca acidez'),__t('demasiada acidez')]}
 ];
 
 function flavorDiag(inten){
@@ -1525,7 +1526,7 @@ function flavorVerdict(v, q){
 
 function flavorVal(t,k){ return (t && t.esc===2 && t[k]!=null) ? t[k] : null; }
 
-const DEFECT_SEV = { 1:'Leve', 2:'Moderado', 3:'Grave' };
+const DEFECT_SEV = { 1:__t('Leve'), 2:__t('Moderado'), 3:__t('Grave') };
 
 function tastingList(b){
   if(!b) return [];
@@ -1602,15 +1603,15 @@ function modelBias(typeId){
 function applyModelBias(typeId){
   const type = db.types.find(t=>t.id===typeId); if(!type) return;
   const mb = modelBias(typeId);
-  if(!mb?.bias){ toast('Faltan catas para calibrar'); return; }
+  if(!mb?.bias){ toast(__t('Faltan catas para calibrar')); return; }
   type.tasteBias = {};
   Object.entries(mb.bias).forEach(([k,v])=>{ type.tasteBias[k] = Math.round(v*10)/10; });
-  saveDB(); render(); toast('Modelo calibrado para '+type.name);
+  saveDB(); render(); toast(__t('Modelo calibrado para ')+type.name);
 }
 
 function clearModelBias(typeId){
   const type = db.types.find(t=>t.id===typeId); if(!type) return;
-  delete type.tasteBias; saveDB(); render(); toast('Calibración quitada');
+  delete type.tasteBias; saveDB(); render(); toast(__t('Calibración quitada'));
 }
 
 function typeQuality(typeId){
@@ -1649,7 +1650,7 @@ const MEAT_META_SEEDS = {
   'Pato magret magro (pechuga desgrasada)':      { animal:'pato',  kind:'corte',    cut:'magret' },
 };
 
-const MEAT_FORMS = { entero:'Entero', molido:'Molido', picado:'Picado' };
+const MEAT_FORMS = { entero:__t('Entero'), molido:__t('Molido'), picado:__t('Picado') };
 
 const CUT_TO_INGREDIENT = {
   'cerdo-magro':      'Cerdo magro (cañón/lomo/pernil)',
@@ -1744,7 +1745,7 @@ function ingredientNutrition(name){
 }
 
 function baseMeatForType(type){
-  const fallback = { label:'Carne genérica', ...MEAT_NUTR_SEEDS['Cerdo magro (cañón/lomo/pernil)'] };
+  const fallback = { label:__t('Carne genérica'), ...MEAT_NUTR_SEEDS['Cerdo magro (cañón/lomo/pernil)'] };
   if(!type) return fallback;
   if(type.baseMeat?.composition){
     const mixed = mixMeats(type.baseMeat.composition);
@@ -1852,22 +1853,22 @@ function computeNutrition(type, overrideYield){
 
   // Colombia frontal warnings (Resolución 810/2492 — productos sólidos, umbrales por 100g)
   const warnings = [];
-  if(per100g.sodium_mg >= 400) warnings.push({ kind:'sodio', label:'ALTO EN\nSODIO' });
-  if(per100g.satFat >= 4)      warnings.push({ kind:'satFat', label:'ALTO EN\nGRASAS\nSATURADAS' });
-  if(per100g.sugars >= 10)     warnings.push({ kind:'azucares', label:'ALTO EN\nAZÚCARES' });
+  if(per100g.sodium_mg >= 400) warnings.push({ kind:'sodio', label:__t('ALTO EN\nSODIO') });
+  if(per100g.satFat >= 4)      warnings.push({ kind:'satFat', label:__t('ALTO EN\nGRASAS\nSATURADAS') });
+  if(per100g.sugars >= 10)     warnings.push({ kind:'azucares', label:__t('ALTO EN\nAZÚCARES') });
 
   // Allergens auto-detected from ingredient names
   const allergens = [];
   (type.stages||[]).forEach(s=>{
     (s.recipe||[]).forEach(r=>{
       const nm = (r.ingredient||'').toLowerCase();
-      if(/leche|lacteo|lactosa|queso|suero/.test(nm)) allergens.push('Lácteos');
-      if(/trigo|harina|gluten|cebada|centeno|avena/.test(nm)) allergens.push('Gluten');
-      if(/soja|soya/.test(nm)) allergens.push('Soja');
-      if(/mostaza/.test(nm)) allergens.push('Mostaza');
-      if(/apio/.test(nm)) allergens.push('Apio');
-      if(/sulfito|sulfite/.test(nm)) allergens.push('Sulfitos');
-      if(/huevo|egg/.test(nm)) allergens.push('Huevo');
+      if(/leche|lacteo|lactosa|queso|suero/.test(nm)) allergens.push(__t('Lácteos'));
+      if(/trigo|harina|gluten|cebada|centeno|avena/.test(nm)) allergens.push(__t('Gluten'));
+      if(/soja|soya/.test(nm)) allergens.push(__t('Soja'));
+      if(/mostaza/.test(nm)) allergens.push(__t('Mostaza'));
+      if(/apio/.test(nm)) allergens.push(__t('Apio'));
+      if(/sulfito|sulfite/.test(nm)) allergens.push(__t('Sulfitos'));
+      if(/huevo|egg/.test(nm)) allergens.push(__t('Huevo'));
     });
   });
 
@@ -1877,10 +1878,10 @@ function computeNutrition(type, overrideYield){
     if(s.brine?.cureSalt?.ingredient){
       const nm = s.brine.cureSalt.ingredient.toLowerCase();
       if(/instacure #1|cura #1/.test(nm)){
-        additives.push('Conservante: nitrito de sodio (INS 250)');
+        additives.push(__t('Conservante: nitrito de sodio (INS 250)'));
       }
       if(/instacure #2|cura #2/.test(nm)){
-        additives.push('Conservantes: nitrito de sodio (INS 250), nitrato de sodio (INS 251)');
+        additives.push(__t('Conservantes: nitrito de sodio (INS 250), nitrato de sodio (INS 251)'));
       }
     }
   });
@@ -1951,11 +1952,11 @@ function requiredSellos(type){
 }
 
 const SELLO_META = {
-  sodio:            { title:'EXCESO EN SODIO',             fname:'sello_exceso_sodio' },
-  grasasSaturadas:  { title:'EXCESO EN GRASAS SATURADAS',  fname:'sello_exceso_grasas_saturadas' },
-  grasasTrans:      { title:'EXCESO EN GRASAS TRANS',      fname:'sello_exceso_grasas_trans' },
-  azucares:         { title:'EXCESO EN AZÚCARES',          fname:'sello_exceso_azucares' },
-  edulcorantes:     { title:'CONTIENE EDULCORANTES',       fname:'sello_contiene_edulcorantes' }
+  sodio:            { title:__t('EXCESO EN SODIO'),             fname:'sello_exceso_sodio' },
+  grasasSaturadas:  { title:__t('EXCESO EN GRASAS SATURADAS'),  fname:'sello_exceso_grasas_saturadas' },
+  grasasTrans:      { title:__t('EXCESO EN GRASAS TRANS'),      fname:'sello_exceso_grasas_trans' },
+  azucares:         { title:__t('EXCESO EN AZÚCARES'),          fname:'sello_exceso_azucares' },
+  edulcorantes:     { title:__t('CONTIENE EDULCORANTES'),       fname:'sello_contiene_edulcorantes' }
 };
 
 function renderSelloSVG(kind){
@@ -1990,11 +1991,11 @@ function renderSelloSVG(kind){
   const titleLines = meta.title.split(' ');
   // Agrupar inteligentemente: "EXCESO EN" / "SODIO" ó "EXCESO EN" / "GRASAS" / "SATURADAS"
   let lines;
-  if(kind === 'sodio')               lines = ['EXCESO EN','SODIO'];
-  else if(kind === 'azucares')       lines = ['EXCESO EN','AZÚCARES'];
-  else if(kind === 'grasasSaturadas')lines = ['EXCESO EN','GRASAS','SATURADAS'];
-  else if(kind === 'grasasTrans')    lines = ['EXCESO EN','GRASAS','TRANS'];
-  else if(kind === 'edulcorantes')   lines = ['CONTIENE','EDULCORANTES'];
+  if(kind === 'sodio')               lines = [__t('EXCESO EN'),__t('SODIO')];
+  else if(kind === 'azucares')       lines = [__t('EXCESO EN'),__t('AZÚCARES')];
+  else if(kind === 'grasasSaturadas')lines = [__t('EXCESO EN'),__t('GRASAS'),__t('SATURADAS')];
+  else if(kind === 'grasasTrans')    lines = [__t('EXCESO EN'),__t('GRASAS'),__t('TRANS')];
+  else if(kind === 'edulcorantes')   lines = [__t('CONTIENE'),__t('EDULCORANTES')];
 
   // Tamaño de fuente ajustado según nº de líneas (para caber dentro del octágono negro central)
   const fontByLines = { 2: 3.1*x, 3: 2.4*x };
@@ -2025,7 +2026,7 @@ function renderSelloSVG(kind){
   <!-- Octágono interior negro (área de texto) -->
   <polygon points="${innerBlack}" fill="#000000"/>
   ${textEls}
-  <text x="${o+12*x}" y="${minsaludY}" fill="#ffffff" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="${minsaludFont}" text-anchor="middle" letter-spacing="1">MINSALUD</text>
+  <text x="${o+12*x}" y="${minsaludY}" fill="#ffffff" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="${minsaludFont}" text-anchor="middle" letter-spacing="1">${__tt`MINSALUD`}</text>
 </svg>`;
 }
 
@@ -2043,26 +2044,26 @@ function renderNutritionTableSVG(type, batch, servingsPerPack){
   const fmtNum = (v, d=1) => {
     if(!isFinite(v)) return '0';
     const n = Number(v);
-    return n.toLocaleString('es-CO',{minimumFractionDigits:d, maximumFractionDigits:d});
+    return n.toLocaleString(__LOC,{minimumFractionDigits:d, maximumFractionDigits:d});
   };
-  const fmtInt = v => Math.round(v||0).toLocaleString('es-CO');
+  const fmtInt = v => Math.round(v||0).toLocaleString(__LOC);
 
   const ps = n.perServing; // por porción
   const kcalFat = Math.round(ps.fat * 9); // calorías de grasa = fat_g * 9
 
   // Rows: [label, value, pctVD, isSubItem, isBold]
   const rows = [
-    { label:'Grasa total',          val:`${fmtNum(ps.fat,1)} g`,         vd:pctVD(ps.fat, VD.fat),           sub:false, bold:true },
-    { label:'Grasas saturadas',     val:`${fmtNum(ps.satFat,1)} g`,      vd:pctVD(ps.satFat, VD.satFat),     sub:true,  bold:false },
-    { label:'Grasas trans',         val:`${fmtNum(ps.transFat,1)} g`,    vd:null,                            sub:true,  bold:false },
-    { label:'Colesterol',           val:`${fmtInt(ps.cholesterol || Math.round(ps.protein*3.2))} mg`, vd:pctVD((ps.cholesterol || Math.round(ps.protein*3.2)), VD.cholesterol), sub:false, bold:true },
-    { label:'Sodio',                val:`${fmtInt(ps.sodium_mg)} mg`,    vd:pctVD(ps.sodium_mg, VD.sodium_mg), sub:false, bold:true },
+    { label:__t('Grasa total'),          val:`${fmtNum(ps.fat,1)} g`,         vd:pctVD(ps.fat, VD.fat),           sub:false, bold:true },
+    { label:__t('Grasas saturadas'),     val:`${fmtNum(ps.satFat,1)} g`,      vd:pctVD(ps.satFat, VD.satFat),     sub:true,  bold:false },
+    { label:__t('Grasas trans'),         val:`${fmtNum(ps.transFat,1)} g`,    vd:null,                            sub:true,  bold:false },
+    { label:__t('Colesterol'),           val:__tt`${fmtInt(ps.cholesterol || Math.round(ps.protein*3.2))} mg`, vd:pctVD((ps.cholesterol || Math.round(ps.protein*3.2)), VD.cholesterol), sub:false, bold:true },
+    { label:__t('Sodio'),                val:__tt`${fmtInt(ps.sodium_mg)} mg`,    vd:pctVD(ps.sodium_mg, VD.sodium_mg), sub:false, bold:true },
     { divider:true },
-    { label:'Carbohidratos totales',val:`${fmtNum(ps.carbs,1)} g`,       vd:pctVD(ps.carbs, VD.carbs),       sub:false, bold:true },
-    { label:'Fibra dietaria',       val:`${fmtNum(ps.fiber,1)} g`,       vd:pctVD(ps.fiber, VD.fiber),       sub:true,  bold:false },
-    { label:'Azúcares totales',     val:`${fmtNum(ps.sugars,1)} g`,      vd:null,                            sub:true,  bold:false },
-    { label:'Azúcares añadidos',    val:`${fmtNum(ps.sugars,1)} g`,      vd:pctVD(ps.sugars, VD.addedSugar), sub:true,  bold:false, indent:true },
-    { label:'Proteína',             val:`${fmtNum(ps.protein,1)} g`,     vd:null,                            sub:false, bold:true }
+    { label:__t('Carbohidratos totales'),val:`${fmtNum(ps.carbs,1)} g`,       vd:pctVD(ps.carbs, VD.carbs),       sub:false, bold:true },
+    { label:__t('Fibra dietaria'),       val:`${fmtNum(ps.fiber,1)} g`,       vd:pctVD(ps.fiber, VD.fiber),       sub:true,  bold:false },
+    { label:__t('Azúcares totales'),     val:`${fmtNum(ps.sugars,1)} g`,      vd:null,                            sub:true,  bold:false },
+    { label:__t('Azúcares añadidos'),    val:`${fmtNum(ps.sugars,1)} g`,      vd:pctVD(ps.sugars, VD.addedSugar), sub:true,  bold:false, indent:true },
+    { label:__t('Proteína'),             val:`${fmtNum(ps.protein,1)} g`,     vd:null,                            sub:false, bold:true }
   ];
 
   // Layout vertical
@@ -2074,14 +2075,14 @@ function renderNutritionTableSVG(type, batch, servingsPerPack){
 
   // Título principal
   const titleFS = 30;
-  chunks.push({ y, html:`<text x="${pad}" y="${y+titleFS-4}" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="${titleFS}" fill="#000">Información nutricional</text>` });
+  chunks.push({ y, html:`<text x="${pad}" y="${y+titleFS-4}" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="${titleFS}" fill="#000">${__tt`Información nutricional`}</text>` });
   y += titleFS + 2;
 
   // Porción
-  chunks.push({ y, html:`<text x="${pad}" y="${y+15}" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14" fill="#000">Tamaño de la porción ${servG} g</text>` });
+  chunks.push({ y, html:`<text x="${pad}" y="${y+15}" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14" fill="#000">${__tt`Tamaño de la porción ${servG} g`}</text>` });
   y += 20;
   if(servPerPack){
-    chunks.push({ y, html:`<text x="${pad}" y="${y+15}" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14" fill="#000">Porciones por envase ${servPerPack}</text>` });
+    chunks.push({ y, html:`<text x="${pad}" y="${y+15}" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14" fill="#000">${__tt`Porciones por envase ${servPerPack}`}</text>` });
     y += 20;
   }
 
@@ -2091,7 +2092,7 @@ function renderNutritionTableSVG(type, batch, servingsPerPack){
   y += barThick + 10;
 
   // "Cantidad por porción"
-  chunks.push({ y, html:`<text x="${pad}" y="${y+12}" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="12" fill="#000">Cantidad por porción</text>` });
+  chunks.push({ y, html:`<text x="${pad}" y="${y+12}" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="12" fill="#000">${__tt`Cantidad por porción`}</text>` });
   y += 14;
 
   // Separador fino
@@ -2101,8 +2102,8 @@ function renderNutritionTableSVG(type, batch, servingsPerPack){
   // Calorías
   const calFS = 22;
   chunks.push({ y, html:`
-    <text x="${pad}" y="${y+calFS-2}" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="${calFS}" fill="#000">Calorías ${fmtInt(ps.kcal)}</text>
-    <text x="${W-pad}" y="${y+calFS-6}" font-family="'Helvetica Neue',Arial,sans-serif" font-size="13" fill="#000" text-anchor="end">Calorías de las grasas ${fmtInt(kcalFat)}</text>
+    <text x="${pad}" y="${y+calFS-2}" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="${calFS}" fill="#000">${__tt`Calorías ${fmtInt(ps.kcal)}`}</text>
+    <text x="${W-pad}" y="${y+calFS-6}" font-family="'Helvetica Neue',Arial,sans-serif" font-size="13" fill="#000" text-anchor="end">${__tt`Calorías de las grasas ${fmtInt(kcalFat)}`}</text>
   ` });
   y += calFS + 6;
 
@@ -2111,7 +2112,7 @@ function renderNutritionTableSVG(type, batch, servingsPerPack){
   y += 6 + 4;
 
   // "% de valor diario *"
-  chunks.push({ y, html:`<text x="${W-pad}" y="${y+12}" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="12" fill="#000" text-anchor="end">% de valor diario *</text>` });
+  chunks.push({ y, html:`<text x="${W-pad}" y="${y+12}" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="12" fill="#000" text-anchor="end">${__tt`% de valor diario *`}</text>` });
   y += 14;
 
   // Separador fino
@@ -2147,7 +2148,7 @@ function renderNutritionTableSVG(type, batch, servingsPerPack){
 
   // Nota de %VD
   const noteFS = 11;
-  const noteText = '* Los porcentajes de valores diarios están basados en una dieta de 2.000 calorías. Sus valores diarios pueden ser mayores o menores dependiendo de sus necesidades energéticas.';
+  const noteText = __t('* Los porcentajes de valores diarios están basados en una dieta de 2.000 calorías. Sus valores diarios pueden ser mayores o menores dependiendo de sus necesidades energéticas.');
   // Simple text wrap
   const words = noteText.split(' ');
   const maxCharsPerLine = 72;
@@ -2171,7 +2172,7 @@ function renderNutritionTableSVG(type, batch, servingsPerPack){
     const pct = totalMass>0 ? (100*i.mass/totalMass).toFixed(1) : '';
     return i.name;
   });
-  const ingText = 'INGREDIENTES: ' + ingParts.join(', ') + '.';
+  const ingText = __t('INGREDIENTES: ') + ingParts.join(', ') + '.';
   const ingFS = 11;
   // Wrap ingredients
   const ingWords = ingText.split(' ');
@@ -2184,14 +2185,14 @@ function renderNutritionTableSVG(type, batch, servingsPerPack){
   });
   if(curIng.trim()) ingLines.push(curIng.trim());
   ingLines.forEach(ln=>{
-    chunks.push({ y, html:`<text x="${pad}" y="${y+ingFS+2}" font-family="'Helvetica Neue',Arial,sans-serif" font-size="${ingFS}" font-weight="${ln.startsWith('INGREDIENTES')?'900':'400'}" fill="#000">${escapeHtml(ln)}</text>` });
+    chunks.push({ y, html:`<text x="${pad}" y="${y+ingFS+2}" font-family="'Helvetica Neue',Arial,sans-serif" font-size="${ingFS}" font-weight="${ln.startsWith(__t('INGREDIENTES'))?'900':'400'}" fill="#000">${escapeHtml(ln)}</text>` });
     y += ingFS + 3;
   });
   y += 4;
 
   // Alérgenos
   if(n.allergens.length){
-    const alText = `CONTIENE: ${n.allergens.join(', ')}.`;
+    const alText = __tt`CONTIENE: ${n.allergens.join(', ')}.`;
     chunks.push({ y, html:`<text x="${pad}" y="${y+ingFS+2}" font-family="'Helvetica Neue',Arial,sans-serif" font-size="${ingFS}" font-weight="900" fill="#000">${escapeHtml(alText)}</text>` });
     y += ingFS + 6;
   }
@@ -2219,7 +2220,7 @@ function renderNutritionTableSVG(type, batch, servingsPerPack){
 }
 
 function exportSVGasPNG(svgStr, filename, scale){
-  if(!svgStr){ toast('No se pudo generar SVG'); return; }
+  if(!svgStr){ toast(__t('No se pudo generar SVG')); return; }
   scale = scale || 2;
   // Extraer dimensiones del SVG
   const wMatch = svgStr.match(/width="(\d+(?:\.\d+)?)"/);
@@ -2242,7 +2243,7 @@ function exportSVGasPNG(svgStr, filename, scale){
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     try{
       canvas.toBlob(blob=>{
-        if(!blob){ toast('Error al exportar PNG'); return; }
+        if(!blob){ toast(__t('Error al exportar PNG')); return; }
         const a = document.createElement('a');
         const bUrl = URL.createObjectURL(blob);
         a.href = bUrl;
@@ -2251,29 +2252,29 @@ function exportSVGasPNG(svgStr, filename, scale){
         a.click();
         document.body.removeChild(a);
         setTimeout(()=>URL.revokeObjectURL(bUrl), 1500);
-        toast('✓ PNG descargado');
+        toast(__t('✓ PNG descargado'));
       }, 'image/png');
     }catch(e){
       console.error(e);
-      toast('Error al generar PNG — intenta descargar como SVG');
+      toast(__t('Error al generar PNG — intenta descargar como SVG'));
     }
   };
   img.onerror = (e)=>{
     console.error('img.onerror', e);
-    toast('Error al cargar SVG en imagen');
+    toast(__t('Error al cargar SVG en imagen'));
   };
   img.src = dataUrl;
 }
 
 function exportSVGFile(svgStr, filename){
-  if(!svgStr){ toast('No se pudo generar SVG'); return; }
+  if(!svgStr){ toast(__t('No se pudo generar SVG')); return; }
   const blob = new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url), 1500);
-  toast('✓ SVG descargado');
+  toast(__t('✓ SVG descargado'));
 }
 
 function exportNutritionTablePNG(type, batch, servingsPerPack){
@@ -2342,11 +2343,11 @@ const removeBaseMeatCut = removeBaseMeatPart;
 
 function selloReasonText(kind, n){
   const map = {
-    sodio:           `${Math.round(n.per100g.sodium_mg)} mg sodio / 100g (umbral: 400 mg)`,
-    grasasSaturadas: `${n.per100g.satFat.toFixed(1)} g grasa saturada / 100g (umbral: 4 g)`,
-    grasasTrans:     `${n.per100g.transFat.toFixed(2)} g grasa trans / 100g (umbral: 1 g)`,
-    azucares:        `${n.per100g.sugars.toFixed(1)} g azúcares / 100g (umbral: 10 g)`,
-    edulcorantes:    `Receta contiene uno o más edulcorantes declarables`
+    sodio:           __tt`${Math.round(n.per100g.sodium_mg)} mg sodio / 100g (umbral: 400 mg)`,
+    grasasSaturadas: __tt`${n.per100g.satFat.toFixed(1)} g grasa saturada / 100g (umbral: 4 g)`,
+    grasasTrans:     __tt`${n.per100g.transFat.toFixed(2)} g grasa trans / 100g (umbral: 1 g)`,
+    azucares:        __tt`${n.per100g.sugars.toFixed(1)} g azúcares / 100g (umbral: 10 g)`,
+    edulcorantes:    __tt`Receta contiene uno o más edulcorantes declarables`
   };
   return map[kind] || '';
 }
@@ -2491,16 +2492,16 @@ function stageLossBreakdown(b){
   return result;
 }
 
-function _cop(v){ return v==null||!isFinite(v) ? '—' : '$'+Math.round(v).toLocaleString('es-CO'); }
+function _cop(v){ return v==null||!isFinite(v) ? '—' : '$'+Math.round(v).toLocaleString(__LOC); }
 
 function _avg(a){ const x=a.filter(v=>v!=null&&isFinite(v)); return x.length ? x.reduce((s,v)=>s+v,0)/x.length : null; }
 
 function _safeFeatures(b){ try{ return batchFeatures(b); }catch(e){ return null; } }
 
 const INS_PARAMS = [
-  {k:'yieldReal', label:'Yield real %', d:1}, {k:'saltPct', label:'Sal %', d:2},
-  {k:'daysTotal', label:'Días totales', d:0}, {k:'avgT', label:'T prom. cava °C', d:1},
-  {k:'avgHR', label:'HR prom. cava %', d:0}, {k:'avgThickness', label:'Grosor medio cm', d:1},
+  {k:'yieldReal', label:__t('Yield real %'), d:1}, {k:'saltPct', label:__t('Sal %'), d:2},
+  {k:'daysTotal', label:__t('Días totales'), d:0}, {k:'avgT', label:__t('T prom. cava °C'), d:1},
+  {k:'avgHR', label:__t('HR prom. cava %'), d:0}, {k:'avgThickness', label:__t('Grosor medio cm'), d:1},
   {k:'aw', label:'aw', d:3}
 ];
 
@@ -2571,7 +2572,7 @@ function downloadBackup(){
   a.href = URL.createObjectURL(blob);
   a.download = `laforet_backup_${date}.json`;
   a.click();
-  toast('Backup descargado · '+date);
+  toast(__t('Backup descargado · ')+date);
 }
 
 function commitHistoricalImport(resolved){
@@ -2594,40 +2595,40 @@ function commitHistoricalImport(resolved){
     saveDB();
     closeModal();
     render();
-    toast(`✓ ${added} lotes históricos importados · backup pre-import guardado`);
+    toast(__tt`✓ ${added} lotes históricos importados · backup pre-import guardado`);
   }catch(e){
-    toast('Error al importar: '+e.message);
+    toast(__t('Error al importar: ')+e.message);
   }
 }
 
 function restoreBackup(key){
-  if(!__confirm('Restaurar este backup reemplazará TODOS los datos actuales. ¿Continuar?')) return;
+  if(!__confirm(__t('Restaurar este backup reemplazará TODOS los datos actuales. ¿Continuar?'))) return;
   try{
     const data = JSON.parse(localStorage.getItem(key));
-    if(!data || !data.db) throw new Error('backup inválido');
+    if(!data || !data.db) throw new Error(__t('backup inválido'));
     db = data.db;
     saveDB();
     render();
     closeModal();
-    toast('Backup restaurado · '+key.slice(BACKUP_PREFIX.length));
+    toast(__t('Backup restaurado · ')+key.slice(BACKUP_PREFIX.length));
   }catch(e){
-    toast('Error al restaurar: '+e.message);
+    toast(__t('Error al restaurar: ')+e.message);
   }
 }
 
 function uid(prefix='id'){ return prefix+'_'+Math.random().toString(36).slice(2,10); }
 
-function fmt(n, d=1){ if(n===null||n===undefined||isNaN(n)) return '—'; return Number(n).toLocaleString('es-CO',{maximumFractionDigits:d, minimumFractionDigits: d>0 && n%1!==0 ? Math.min(d,2) : 0}); }
+function fmt(n, d=1){ if(n===null||n===undefined||isNaN(n)) return '—'; return Number(n).toLocaleString(__LOC,{maximumFractionDigits:d, minimumFractionDigits: d>0 && n%1!==0 ? Math.min(d,2) : 0}); }
 
-function fmtG(n){ if(n===null||n===undefined||isNaN(n)) return '—'; if(n>=1000) return (n/1000).toLocaleString('es-CO',{maximumFractionDigits:2})+' kg'; return Math.round(n).toLocaleString('es-CO')+' g'; }
+function fmtG(n){ if(n===null||n===undefined||isNaN(n)) return '—'; if(n>=1000) return (n/1000).toLocaleString(__LOC,{maximumFractionDigits:2})+' kg'; return Math.round(n).toLocaleString(__LOC)+' g'; }
 
-function fmtGExact(n){ if(n===null||n===undefined||isNaN(n)) return '—'; return Math.round(n).toLocaleString('es-CO')+' g'; }
+function fmtGExact(n){ if(n===null||n===undefined||isNaN(n)) return '—'; return Math.round(n).toLocaleString(__LOC)+' g'; }
 
 const APP_TZ = 'America/Bogota';
 
-function fmtDate(d){ if(!d) return '—'; const D = new Date(d); return D.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'2-digit',timeZone:APP_TZ}); }
+function fmtDate(d){ if(!d) return '—'; const D = new Date(d); return D.toLocaleDateString(__LOC,{day:'2-digit',month:'short',year:'2-digit',timeZone:APP_TZ}); }
 
-function fmtDateShort(d){ if(!d) return '—'; const D = new Date(d); return D.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',timeZone:APP_TZ}); }
+function fmtDateShort(d){ if(!d) return '—'; const D = new Date(d); return D.toLocaleDateString(__LOC,{day:'2-digit',month:'2-digit',timeZone:APP_TZ}); }
 
 function daysBetween(a,b){ return Math.floor((new Date(b) - new Date(a))/(1000*60*60*24)); }
 
@@ -2699,7 +2700,7 @@ function previewRef(nb, type, excludeBatchId){
   if(fromLot){
     // Check collision with existing batches (excluding self in edit mode)
     const collision = db.batches.some(b => b.ref === fromLot && b.id !== excludeBatchId);
-    return collision ? fromLot + ' ⚠ ya existe' : fromLot;
+    return collision ? fromLot + __t(' ⚠ ya existe') : fromLot;
   }
   // No lot provided — use next available sequence
   return nextRefFor(type.ref);
@@ -2744,7 +2745,7 @@ function todaysAgenda(){
         if(safety.ready) return;
         if(daysSince >= 7){
           items.push({ kind:'weigh', urgency: daysSince, batchId:b.id, pieceId:p.id,
-                       label: `Pesar ${p.code} (${b.ref})`, note: latest ? `${daysSince}d sin registro` : `${daysSince}d desde inicio Secado · sin registros aún` });
+                       label: __tt`Pesar ${p.code} (${b.ref})`, note: latest ? __tt`${daysSince}d sin registro` : __tt`${daysSince}d desde inicio Secado · sin registros aún` });
         }
       });
     }
@@ -2754,17 +2755,17 @@ function todaysAgenda(){
         const safety = safetyStatus(b, p);
         if(safety.aw!==null && safety.aw <= safety.awTarget){
           items.push({ kind:'ready', urgency: 100, batchId:b.id, pieceId:p.id,
-                       label: `${p.code} en objetivo (${b.ref})`, note: `aw ${safety.aw.toFixed(3)} ≤ ${safety.awTarget.toFixed(2)} · considerá avanzar etapa` });
+                       label: __tt`${p.code} en objetivo (${b.ref})`, note: __tt`aw ${safety.aw.toFixed(3)} ≤ ${safety.awTarget.toFixed(2)} · considerá avanzar etapa` });
         }
       });
     }
     // PCCs: receiving sin core T registrada
     if(!b.receiving || b.receiving.coreT===null || b.receiving.coreT===undefined){
       items.push({ kind:'pcc', urgency: 90, batchId:b.id,
-                   label: `${b.ref} sin core T de recepción`, note: 'PCC HACCP #22 pendiente' });
+                   label: __tt`${b.ref} sin core T de recepción`, note: __t('PCC HACCP #22 pendiente') });
     } else if(b.receiving.coreT > 4 && b.receiving.acceptance==='pending'){
       items.push({ kind:'pcc', urgency: 95, batchId:b.id,
-                   label: `${b.ref} recepción con T>4°C sin decisión`, note: 'Documentar aceptar/rechazar' });
+                   label: __tt`${b.ref} recepción con T>4°C sin decisión`, note: __t('Documentar aceptar/rechazar') });
     }
     // Fermentación: pH no registrado en 24h — solo si Fermentado realmente arrancó
     const fermStage = (b.stages||[]).find(s=>s.kind==='Fermentado' && !s.done && s.startedAt && new Date(s.startedAt).getTime() <= now);
@@ -2774,7 +2775,7 @@ function todaysAgenda(){
       const latestPh = phLogs.sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
       if(hoursInFerm > 24 && (!latestPh || latestPh.ph > 5.3)){
         items.push({ kind:'ferm', urgency: 110, batchId:b.id,
-                     label: `⚠ Fermentación ${b.ref}: pH ${latestPh?latestPh.ph:'no registrado'}`, note: hoursInFerm.toFixed(0)+'h en fermentación · pH debe caer <5.3' });
+                     label: __tt`⚠ Fermentación ${b.ref}: pH ${latestPh?latestPh.ph:__t('no registrado')}`, note: hoursInFerm.toFixed(0)+__t('h en fermentación · pH debe caer <5.3') });
       }
     }
     // Etapas vencidas
@@ -2783,7 +2784,7 @@ function todaysAgenda(){
       const eta = daysBetween(new Date(), cs.expectedEnd);
       if(eta < 0){
         items.push({ kind:'stage', urgency: 80 + Math.min(20, -eta), batchId:b.id,
-                     label: `${cs.kind} de ${b.ref} vencida`, note: `${-eta}d vencida · revisar/avanzar` });
+                     label: __tt`${cs.kind} de ${b.ref} vencida`, note: __tt`${-eta}d vencida · revisar/avanzar` });
       }
     }
     // v2.1 #18 — Danger Zone contextual por etapa (usa envLog Govee).
@@ -2794,7 +2795,7 @@ function todaysAgenda(){
       const avgT = envStage.avgT;
       if(cs.kind === 'Curado' && avgT > 6){
         items.push({ kind:'danger', urgency: 115, batchId:b.id,
-                     label: `⚠ ${b.ref}: Curado a ${avgT.toFixed(1)}°C`, note: `Promedio sobre 6°C — sal aún difundiendo con aw alta` });
+                     label: __tt`⚠ ${b.ref}: Curado a ${avgT.toFixed(1)}°C`, note: __tt`Promedio sobre 6°C — sal aún difundiendo con aw alta` });
       } else if((cs.kind === 'Secado' || cs.kind === 'Madurado')){
         // Alert if avg T > target+5 AND at least one piece still vulnerable (aw > AW_NO_BARRIER)
         const target = 13;
@@ -2804,14 +2805,14 @@ function todaysAgenda(){
         });
         if(avgT > target + 5 && vulnerable){
           items.push({ kind:'danger', urgency: 112, batchId:b.id,
-                       label: `⚠ ${b.ref}: ${cs.kind} a ${avgT.toFixed(1)}°C con pieza vulnerable`, note: `Deriva >5°C sobre target 13°C y hay pieza con aw>${AW_NO_BARRIER.toFixed(2)}` });
+                       label: __tt`⚠ ${b.ref}: ${cs.kind} a ${avgT.toFixed(1)}°C con pieza vulnerable`, note: __tt`Deriva >5°C sobre target 13°C y hay pieza con aw>${AW_NO_BARRIER.toFixed(2)}` });
         }
       }
     }
     // Recepción con core T > 4°C alerta más fuerte
     if(b.receiving && b.receiving.coreT !== null && b.receiving.coreT > 4){
       items.push({ kind:'danger', urgency: 108, batchId:b.id,
-                   label: `${b.ref}: recibido a ${(+b.receiving.coreT).toFixed(1)}°C`, note: 'Core T sobre umbral HACCP — procesar hoy o descartar' });
+                   label: __tt`${b.ref}: recibido a ${(+b.receiving.coreT).toFixed(1)}°C`, note: __t('Core T sobre umbral HACCP — procesar hoy o descartar') });
     }
     // v2.2 #16 — HACCP critical PCC failures
     if(typeof evaluateHaccp === 'function'){
@@ -2819,7 +2820,7 @@ function todaysAgenda(){
       hac.results.filter(r=>r.status==='fail').forEach(r=>{
         const sev = r.pcc.severity==='critical' ? 120 : 95;
         items.push({ kind:'pcc-fail', urgency: sev, batchId:b.id,
-                     label: `${b.ref}: ${r.pcc.label}`, note: `PCC violado · ${r.detail}` });
+                     label: `${b.ref}: ${r.pcc.label}`, note: __tt`PCC violado · ${r.detail}` });
       });
     }
     // Case hardening: alerta si Secado realmente arrancó con VPD alto
@@ -2831,7 +2832,7 @@ function todaysAgenda(){
         const r = caseHardeningRisk(b, thickest);
         if(r && r.risk){
           items.push({ kind:'ch', urgency: 85, batchId:b.id,
-                       label: `${b.ref}: posible case hardening`, note: r.msg });
+                       label: __tt`${b.ref}: posible case hardening`, note: r.msg });
         }
       }
     }
@@ -2843,10 +2844,10 @@ function todaysAgenda(){
     const sc = batchScore(b);
     if(sc!=null && type?.tasteTarget && sc < type.tasteTarget){
       items.push({ kind:'tasting', urgency: 50, batchId:b.id,
-                   label: `${b.ref}: cata ${sc} por debajo de la meta ${type.tasteTarget}`, note: 'Revisá defectos y la «receta ganadora» en Analytics antes del próximo lote' });
+                   label: __tt`${b.ref}: cata ${sc} por debajo de la meta ${type.tasteTarget}`, note: __t('Revisá defectos y la «receta ganadora» en Analytics antes del próximo lote') });
     } else if(tastingList(b).length===0 && b.finishedAt && (Date.now()-new Date(b.finishedAt).getTime()) < 45*86400000){
       items.push({ kind:'tasting', urgency: 30, batchId:b.id,
-                   label: `${b.ref}: sin cata registrada`, note: 'Una cata alimenta calibración, defectos y punto óptimo' });
+                   label: __tt`${b.ref}: sin cata registrada`, note: __t('Una cata alimenta calibración, defectos y punto óptimo') });
     }
   });
   // Sort by urgency desc
@@ -2881,17 +2882,17 @@ function batchProgressPct(b){
 }
 
 function timeStatusForStage(s){
-  if(s.done) return { level:'gray', label:'Terminada', pct:100 };
-  if(!s.startedAt || !s.expectedEnd) return { level:'gray', label:'Sin fechas', pct:0 };
+  if(s.done) return { level:'gray', label:__t('Terminada'), pct:100 };
+  if(!s.startedAt || !s.expectedEnd) return { level:'gray', label:__t('Sin fechas'), pct:0 };
   const start = new Date(s.startedAt).getTime();
   const end = new Date(s.expectedEnd).getTime();
   const now = Date.now();
   const total = end - start;
   const elapsed = now - start;
   const pct = total>0? (elapsed/total)*100 : 0;
-  if(pct >= 100) return { level:'green', label:'Lista · pasar a siguiente', pct };
-  if(pct >= 80) return { level:'yellow', label:'Casi lista', pct };
-  return { level:'red', label:'En proceso', pct };
+  if(pct >= 100) return { level:'green', label:__t('Lista · pasar a siguiente'), pct };
+  if(pct >= 80) return { level:'yellow', label:__t('Casi lista'), pct };
+  return { level:'red', label:__t('En proceso'), pct };
 }
 
 function latestPieceWeight(piece, b){
@@ -2976,7 +2977,7 @@ function fitExpDecay(samples, Wtarget){
   for(const p of weighted){ num += p.w * p.t * p.lny; den += p.w * p.t * p.t; }
   if(den === 0) return { hasEnough:false };
   const k = -num / den;
-  if(k <= 0) return { hasEnough:false, k, note:'La pieza no esta perdiendo peso' };
+  if(k <= 0) return { hasEnough:false, k, note:__t('La pieza no esta perdiendo peso') };
   // Current state: latest sample
   const last = samples[samples.length-1];
   const Wnow = last.w;
@@ -3016,10 +3017,10 @@ function pieceEstimation(b, piece){
   const target = pieceTargetWeight(b, piece);
   const samples = pieceSecadoSamples(b, piece);
   if(samples.length < 2){
-    return { target, samples, hasEnough:false, note: samples.length<1 ? 'Falta registro inicial de Secado' : 'Falta al menos una medicion mas' };
+    return { target, samples, hasEnough:false, note: samples.length<1 ? __t('Falta registro inicial de Secado') : __t('Falta al menos una medicion mas') };
   }
   const fit = fitExpDecay(samples, target);
-  if(!fit.hasEnough) return { target, samples, hasEnough:false, note: fit.note || 'Datos insuficientes' };
+  if(!fit.hasEnough) return { target, samples, hasEnough:false, note: fit.note || __t('Datos insuficientes') };
   const now = new Date();
   const estCompletion = new Date(now.getTime() + fit.daysRemaining * 24*60*60*1000);
   return { target, samples, hasEnough:true, ...fit, estCompletion };
@@ -3039,10 +3040,10 @@ function weightStatusForPiece(b, piece){
   // the Secado start weight alone never cleared the "needsStart" alert.
   const hasStartW = !!pieceStartWeight(b, piece);
   const hasLog = (piece.weightLogs||[]).length > 0 || hasStartW;
-  if(!hasLog) return { level:'gray', label:'Sin registro', current, target, pct:0, deltaPct, hasLog, needsStart:true };
-  if(current <= target*1.02) return { level:'green', label:'Peso objetivo alcanzado', current, target, pct, deltaPct, hasLog };
-  if(current <= target*1.05) return { level:'yellow', label:'Cerca del objetivo', current, target, pct, deltaPct, hasLog };
-  return { level:'red', label:'Aún secando', current, target, pct, deltaPct, hasLog };
+  if(!hasLog) return { level:'gray', label:__t('Sin registro'), current, target, pct:0, deltaPct, hasLog, needsStart:true };
+  if(current <= target*1.02) return { level:'green', label:__t('Peso objetivo alcanzado'), current, target, pct, deltaPct, hasLog };
+  if(current <= target*1.05) return { level:'yellow', label:__t('Cerca del objetivo'), current, target, pct, deltaPct, hasLog };
+  return { level:'red', label:__t('Aún secando'), current, target, pct, deltaPct, hasLog };
 }
 
 function weightStatusForBatch(b){
@@ -3057,7 +3058,7 @@ function weightStatusForBatch(b){
   const levels = b.pieces.map(p=>weightStatusForPiece(b,p).level);
   const order = {red:3, yellow:2, green:1, gray:0};
   const worst = levels.reduce((w,l)=> order[l]>order[w]?l:w, 'gray');
-  const labels = {red:'Aún secando', yellow:'Cerca del objetivo', green:'Peso objetivo alcanzado', gray:'Pendiente iniciar o sin registros'};
+  const labels = {red:__t('Aún secando'), yellow:__t('Cerca del objetivo'), green:__t('Peso objetivo alcanzado'), gray:__t('Pendiente iniciar o sin registros')};
   return { level:worst, label:labels[worst], current, target, pct, deltaPct };
 }
 
@@ -3263,11 +3264,11 @@ function ingredientUsage(name){
 
 function ingredientUsageDetail(u){
   const parts = [];
-  if(u.recipe) parts.push(`${u.recipe} receta${u.recipe===1?'':'s'} de etapa`);
-  if(u.brine)  parts.push(`${u.brine} salmuera${u.brine===1?'':'s'}`);
-  if(u.cure)   parts.push(`${u.cure} sal${u.cure===1?'':'es'} de curado`);
-  if(u.inoc)   parts.push(`${u.inoc} inoculación${u.inoc===1?'':'es'}`);
-  if(u.meat)   parts.push(`${u.meat} composición${u.meat===1?'':'es'} de carne`);
+  if(u.recipe) parts.push(__tt`${u.recipe} receta${u.recipe===1?'':'s'} de etapa`);
+  if(u.brine)  parts.push(__tt`${u.brine} salmuera${u.brine===1?'':'s'}`);
+  if(u.cure)   parts.push(__tt`${u.cure} sal${u.cure===1?'':'es'} de curado`);
+  if(u.inoc)   parts.push(__tt`${u.inoc} inoculación${u.inoc===1?'':'es'}`);
+  if(u.meat)   parts.push(__tt`${u.meat} composición${u.meat===1?'':'es'} de carne`);
   return parts.join(', ');
 }
 
@@ -3275,16 +3276,16 @@ function meatMetaTag(ing){
   const m = ing.meat;
   if(!m) return '';
   const animal = m.animal ? m.animal.charAt(0).toUpperCase()+m.animal.slice(1) : '';
-  if(m.kind === 'corte') return `${animal} · corte: ${m.cut||'—'}`;
-  const fat = {magro:'magro', entreverado:'entreverado', grasa:'grasa pura'}[m.fatLevel] || '';
-  return `${animal} · genérica${fat?' · '+fat:''}`;
+  if(m.kind === 'corte') return __tt`${animal} · corte: ${m.cut||'—'}`;
+  const fat = {magro:'magro', entreverado:'entreverado', grasa:__t('grasa pura')}[m.fatLevel] || '';
+  return __tt`${animal} · genérica${fat?' · '+fat:''}`;
 }
 
 function openEditBatchModal(batchId){
   const b = db.batches.find(x=>x.id===batchId);
-  if(!b){ toast('Lote no encontrado'); return; }
+  if(!b){ toast(__t('Lote no encontrado')); return; }
   if(b.status==='done'){
-    if(!__confirm('Este lote esta terminado. Editar puede alterar sus datos historicos. Continuar?')) return;
+    if(!__confirm(__t('Este lote esta terminado. Editar puede alterar sus datos historicos. Continuar?'))) return;
   }
   // Populate _newBatch with existing data — same shape as new batch
   // Extract current salt from first Curado stage as the "override" baseline
@@ -3339,8 +3340,8 @@ function openNewBatchModal(){
 function createBatch(){
   const nb = __win._newBatch;
   const type = db.types.find(t=>t.id===nb.typeId);
-  if(!type){ toast('Selecciona un tipo'); return; }
-  if(nb.pieces.length===0){ toast('Agrega al menos una pieza'); return; }
+  if(!type){ toast(__t('Selecciona un tipo')); return; }
+  if(nb.pieces.length===0){ toast(__t('Agrega al menos una pieza')); return; }
 
   // Edit mode: update existing batch instead of creating a new one
   if(nb.editingBatchId){
@@ -3350,7 +3351,7 @@ function createBatch(){
       const newRef = refFromLot(type.ref, nb.lot) || b.ref;
       if(newRef !== b.ref){
         const collision = db.batches.some(x => x.ref === newRef && x.id !== b.id);
-        if(collision){ toast('Ya existe un lote con ref '+newRef+' · usá otro número'); return; }
+        if(collision){ toast(__t('Ya existe un lote con ref ')+newRef+__t(' · usá otro número')); return; }
         // Rename piece codes that follow the old ref+letter pattern
         const oldRef = b.ref;
         b.pieces.forEach((p,i)=>{
@@ -3416,7 +3417,7 @@ function createBatch(){
       saveDB();
       closeModal();
       render();
-      toast('Lote '+b.ref+' actualizado');
+      toast(__t('Lote ')+b.ref+' actualizado');
       return;
     }
   }
@@ -3426,7 +3427,7 @@ function createBatch(){
   const fromLot = refFromLot(type.ref, nb.lot);
   if(fromLot){
     const collision = db.batches.some(x => x.ref === fromLot);
-    if(collision){ toast('Ya existe un lote con ref '+fromLot+' · usá otro lote o dejalo vacío'); return; }
+    if(collision){ toast(__t('Ya existe un lote con ref ')+fromLot+__t(' · usá otro lote o dejalo vacío')); return; }
     ref = fromLot;
   } else {
     ref = nextRefFor(type.ref);
@@ -3507,7 +3508,7 @@ function createBatch(){
     notes: nb.notes || ''
   };
   db.batches.push(batch);
-  saveDB(); closeModal(); goto('batch-detail',{batchId:batch.id}); toast('Lote '+ref+' creado');
+  saveDB(); closeModal(); goto('batch-detail',{batchId:batch.id}); toast(__t('Lote ')+ref+' creado');
 }
 
 function completeStage(batchId, idx){
@@ -3526,7 +3527,7 @@ function completeStage(batchId, idx){
   }
   // if all done, mark batch done
   if(b.stages.every(s=>s.done)){ b.status='done'; b.finishedAt=new Date().toISOString(); }
-  saveDB(); render(); toast('Etapa completada');
+  saveDB(); render(); toast(__t('Etapa completada'));
 }
 
 function saveStageDates(batchId, idx){
@@ -3542,7 +3543,7 @@ function saveStageDates(batchId, idx){
     ns.expectedEnd = addDays(cursor, ns.dEst);
     cursor = new Date(ns.expectedEnd);
   }
-  saveDB(); closeModal(); render(); toast('Fechas actualizadas');
+  saveDB(); closeModal(); render(); toast(__t('Fechas actualizadas'));
 }
 
 function openWeightLogModal(batchId){ openBulkWeightModal(batchId); }
@@ -3552,7 +3553,7 @@ function saveSecadoStart(batchId){
   const s = findSecadoStage(b);
   if(!s) return;
   const lossPct = +__el('sec-loss-pct').value;
-  if(!(lossPct > 0 && lossPct < 100)){ toast('Ingresa un % de perdida valido (0-100)'); return; }
+  if(!(lossPct > 0 && lossPct < 100)){ toast(__t('Ingresa un % de perdida valido (0-100)')); return; }
   const startWeights = {};
   let missing = 0;
   const tarePctRaw = +__el('sec-tare-pct').value;
@@ -3566,26 +3567,26 @@ function saveSecadoStart(batchId){
     }
   });
   db.tarePct = tarePct;
-  if(missing > 0){ toast('Falta el peso inicial de '+missing+' pieza(s)'); return; }
+  if(missing > 0){ toast(__t('Falta el peso inicial de ')+missing+' pieza(s)'); return; }
   s.lossTargetPct = lossPct;
   s.startWeights = startWeights;
   if(!s.startedAt) s.startedAt = new Date().toISOString();
   saveDB();
   closeModal();
   render();
-  toast('Secado iniciado · objetivos calculados por pieza');
+  toast(__t('Secado iniciado · objetivos calculados por pieza'));
 }
 
 function savePieceWeightLog(batchId, pieceId){
   const b = db.batches.find(x=>x.id===batchId);
   const p = b.pieces.find(x=>x.id===pieceId);
   const w = +__el('wl-weight').value;
-  if(!w){ toast('Ingresa un peso'); return; }
+  if(!w){ toast(__t('Ingresa un peso')); return; }
   const dateISO = parseLocalDate(__el('wl-date').value).toISOString();
   // #12 Reconciliación de pesos sospechosos
   const sus = isWeightSuspicious(p, w, dateISO);
   if(sus){
-    const confirmed = __confirm(`${sus.msg}\n\n¿Es correcto el peso ${w}g? (Cancelar = no guardar; OK = guardar como posible outlier)`);
+    const confirmed = __confirm(__tt`${sus.msg}\n\n¿Es correcto el peso ${w}g? (Cancelar = no guardar; OK = guardar como posible outlier)`);
     if(!confirmed){ return; }
   }
   p.weightLogs = p.weightLogs || [];
@@ -3597,14 +3598,14 @@ function savePieceWeightLog(batchId, pieceId){
     outlier: sus ? false : undefined,  // user can toggle later
     suspicious: sus ? sus.kind : undefined
   });
-  saveDB(); closeModal(); render(); toast(sus ? '⚠ Peso registrado (marcado como sospechoso)' : 'Peso registrado para '+p.code);
+  saveDB(); closeModal(); render(); toast(sus ? __t('⚠ Peso registrado (marcado como sospechoso)') : __t('Peso registrado para ')+p.code);
 }
 
 function saveAwReading(batchId, pieceId){
   const b = db.batches.find(x=>x.id===batchId); const p = b?.pieces.find(x=>x.id===pieceId);
   if(!p) return;
   const aw = +__el('aw-val').value;
-  if(!(aw>=0.5 && aw<=1)){ toast('Ingresá un aw entre 0.500 y 1.000'); return; }
+  if(!(aw>=0.5 && aw<=1)){ toast(__t('Ingresá un aw entre 0.500 y 1.000')); return; }
   const w = +__el('aw-w').value;
   p.awReadings = p.awReadings || [];
   p.awReadings.push({
@@ -3614,13 +3615,13 @@ function saveAwReading(batchId, pieceId){
     instrument: __el('aw-inst').value.trim(),
     note: __el('aw-note').value.trim()
   });
-  saveDB(); closeModal(); render(); toast('aw medido registrado · '+p.code);
+  saveDB(); closeModal(); render(); toast(__t('aw medido registrado · ')+p.code);
 }
 
 function removeAwReading(batchId, pieceId, id){
   const b = db.batches.find(x=>x.id===batchId); const p = b?.pieces.find(x=>x.id===pieceId);
   if(!p) return;
-  if(!__confirm('¿Eliminar esta medición de aw?')) return;
+  if(!__confirm(__t('¿Eliminar esta medición de aw?'))) return;
   p.awReadings = (p.awReadings||[]).filter(r=>r.id!==id);
   saveDB(); render();
 }
@@ -3651,9 +3652,9 @@ function saveBulkWeightLog(batchId){
       count++;
     }
   });
-  if(count===0){ toast('No se ingresó ningún peso'); return; }
+  if(count===0){ toast(__t('No se ingresó ningún peso')); return; }
   saveDB(); closeModal(); render();
-  toast(count+' peso'+(count===1?'':'s')+' registrado'+(count===1?'':'s') + (suspiciousCount?` · ${suspiciousCount} ⚠ sospechoso${suspiciousCount===1?'':'s'}`:''));
+  toast(count+' peso'+(count===1?'':'s')+' registrado'+(count===1?'':'s') + (suspiciousCount?__tt` · ${suspiciousCount} ⚠ sospechoso${suspiciousCount===1?'':'s'}`:''));
 }
 
 function toggleOutlier(batchId, pieceId, logId){
@@ -3663,7 +3664,7 @@ function toggleOutlier(batchId, pieceId, logId){
   if(!log) return;
   log.outlier = !log.outlier;
   saveDB(); render();
-  toast(log.outlier ? 'Marcado como outlier (excluido del fit)' : 'Reincluido en el fit');
+  toast(log.outlier ? __t('Marcado como outlier (excluido del fit)') : __t('Reincluido en el fit'));
 }
 
 function phSafetyVerdict(ph, ctx){
@@ -3677,51 +3678,51 @@ function phSafetyVerdict(ph, ctx){
   const dl = ctx.dangerLow, dh = ctx.dangerHigh;
   if(ph > dh){
     return { level:'danger', icon:'☠',
-      title:`pH ${ph} — PELIGRO: no ha acidificado`,
-      desc:`Por encima de ${dh} el producto no alcanzó la barrera ácida. Riesgo de crecimiento de patógenos (C. botulinum, Salmonella, S. aureus). Si ya pasaron las horas críticas de fermentación sin bajar de 5.3, considere descartar el lote.` };
+      title:__tt`pH ${ph} — PELIGRO: no ha acidificado`,
+      desc:__tt`Por encima de ${dh} el producto no alcanzó la barrera ácida. Riesgo de crecimiento de patógenos (C. botulinum, Salmonella, S. aureus). Si ya pasaron las horas críticas de fermentación sin bajar de 5.3, considere descartar el lote.` };
   }
   if(ph < dl){
     return { level:'danger', icon:'⚠',
-      title:`pH ${ph} — Sobre-acidificado`,
-      desc:`Por debajo de ${dl} el cultivo acidificó en exceso. Sabor demasiado ácido y textura afectada. No es un riesgo de botulismo, pero revise dosis de dextrosa/cultivo y temperatura.` };
+      title:__tt`pH ${ph} — Sobre-acidificado`,
+      desc:__tt`Por debajo de ${dl} el cultivo acidificó en exceso. Sabor demasiado ácido y textura afectada. No es un riesgo de botulismo, pero revise dosis de dextrosa/cultivo y temperatura.` };
   }
   if(ph <= 4.6){
     return { level:'safe', icon:'✓',
-      title:`pH ${ph} — Barrera ácida sólida`,
-      desc:`Por debajo de 4.6 se inhibe C. botulinum y la mayoría de patógenos. Producto estable para secado y madurado.` };
+      title:__tt`pH ${ph} — Barrera ácida sólida`,
+      desc:__tt`Por debajo de 4.6 se inhibe C. botulinum y la mayoría de patógenos. Producto estable para secado y madurado.` };
   }
   if(ph <= 5.3){
     return { level:'safe', icon:'✓',
-      title:`pH ${ph} — En rango seguro de fermentado`,
-      desc:`Entre 4.6 y 5.3 es el rango típico de un embutido fermentado bien acidificado. Combinado con la pérdida de humedad (aw) garantiza estabilidad.` };
+      title:__tt`pH ${ph} — En rango seguro de fermentado`,
+      desc:__tt`Entre 4.6 y 5.3 es el rango típico de un embutido fermentado bien acidificado. Combinado con la pérdida de humedad (aw) garantiza estabilidad.` };
   }
   // 5.3 < ph <= dangerHigh
   return { level:'caution', icon:'△',
-    title:`pH ${ph} — Zona de vigilancia`,
-    desc:`Entre 5.3 y ${dh}. Aún no cruza la barrera de 5.3. Vigile de cerca: debe seguir bajando. Si se estanca aquí, revise temperatura, humedad y actividad del cultivo.` };
+    title:__tt`pH ${ph} — Zona de vigilancia`,
+    desc:__tt`Entre 5.3 y ${dh}. Aún no cruza la barrera de 5.3. Vigile de cerca: debe seguir bajando. Si se estanca aquí, revise temperatura, humedad y actividad del cultivo.` };
 }
 
 function phRecommendations(ph, ctx){
   const recos = [];
   if(ph===null||ph===undefined||isNaN(ph)) return recos;
   if(ph > 5.3){
-    recos.push('Verifique temperatura de fermentación (los cultivos meso/termófilos necesitan su rango exacto).');
-    recos.push('Confirme dosis de dextrosa: es el "combustible" que las bacterias convierten en ácido láctico.');
-    recos.push('Revise que el cultivo estuviera activo (rehidratado en agua no clorada, no vencido).');
+    recos.push(__t('Verifique temperatura de fermentación (los cultivos meso/termófilos necesitan su rango exacto).'));
+    recos.push(__t('Confirme dosis de dextrosa: es el "combustible" que las bacterias convierten en ácido láctico.'));
+    recos.push(__t('Revise que el cultivo estuviera activo (rehidratado en agua no clorada, no vencido).'));
   }
   if(ph > ctx.dangerHigh){
-    recos.push('Si superó las horas críticas sin bajar de 5.3, aplique la regla de "degree-hours" y evalúe descarte.');
-    recos.push('No avance a secado hasta acidificar; el secado sin barrera ácida es riesgoso.');
+    recos.push(__t('Si superó las horas críticas sin bajar de 5.3, aplique la regla de "degree-hours" y evalúe descarte.'));
+    recos.push(__t('No avance a secado hasta acidificar; el secado sin barrera ácida es riesgoso.'));
   }
   if(ph < ctx.dangerLow){
-    recos.push('Reduzca dextrosa o tiempo de fermentación en el próximo lote.');
-    recos.push('Baje ligeramente la temperatura para frenar la producción de ácido.');
+    recos.push(__t('Reduzca dextrosa o tiempo de fermentación en el próximo lote.'));
+    recos.push(__t('Baje ligeramente la temperatura para frenar la producción de ácido.'));
   }
   if(ph>=4.6 && ph<=5.3){
-    recos.push('Rango ideal alcanzado: puede pasar a secado/madurado según cronograma.');
-    recos.push('Registre el pH final para trazabilidad del lote.');
+    recos.push(__t('Rango ideal alcanzado: puede pasar a secado/madurado según cronograma.'));
+    recos.push(__t('Registre el pH final para trazabilidad del lote.'));
   }
-  recos.push('Mida a temperatura ambiente con pHmetro calibrado (buffers 4.0 y 7.0); las tiras no son confiables.');
+  recos.push(__t('Mida a temperatura ambiente con pHmetro calibrado (buffers 4.0 y 7.0); las tiras no son confiables.'));
   return recos;
 }
 
@@ -3739,15 +3740,15 @@ function savePh(batchId, stageIdx){
   };
   if(existing) Object.assign(existing, data);
   else b.phLogs.push(data);
-  saveDB(); closeModal(); render(); toast('pH registrado');
+  saveDB(); closeModal(); render(); toast(__t('pH registrado'));
 }
 
 function finishBatch(id){
   const b = db.batches.find(x=>x.id===id);
-  if(!__confirm(`¿Marcar lote ${b.ref} como terminado?`)) return;
+  if(!__confirm(__tt`¿Marcar lote ${b.ref} como terminado?`)) return;
   b.status='done'; b.finishedAt=new Date().toISOString();
   b.stages.forEach(s=>{ if(!s.done){ s.done=true; s.actualEnd=new Date().toISOString(); } });
-  saveDB(); render(); toast('Lote terminado · abrí la cata cuando quieras');
+  saveDB(); render(); toast(__t('Lote terminado · abrí la cata cuando quieras'));
   // Immediately prompt for tasting panel (optional but encouraged)
   setTimeout(()=>openTastingModal(id), 200);
 }
@@ -3778,7 +3779,7 @@ function piecesNeedingWeighing(){
 
 function openWeighSession(){
   const list = piecesNeedingWeighing();
-  if(list.length === 0){ toast('No hay piezas pendientes de pesaje'); return; }
+  if(list.length === 0){ toast(__t('No hay piezas pendientes de pesaje')); return; }
   __win._weighSession = { list, idx: 0, startedAt: new Date().toISOString(), count: 0 };
   renderWeighSession();
 }
@@ -3804,7 +3805,7 @@ function weighSessionAdvance(skip){
       ws.count++;
       saveDB();
     } else {
-      toast('Ingresa un peso o pulsa Saltar');
+      toast(__t('Ingresa un peso o pulsa Saltar'));
       return;
     }
   }
@@ -3819,7 +3820,7 @@ function addEnvLog(batchId){
   const t = __el('env-t').value;
   const hr = __el('env-hr').value;
   const stage = __el('env-stage').value;
-  if(!dateIn || (!t && !hr)){ toast('Faltan datos'); return; }
+  if(!dateIn || (!t && !hr)){ toast(__t('Faltan datos')); return; }
   if(!b.envLog) b.envLog = [];
   b.envLog.push({
     id: uid('env'),
@@ -3850,14 +3851,14 @@ function importGoveeCsv(event, batchId){
     try{
       const text = e.target.result;
       const lines = text.split(/\r?\n/).filter(l=>l.trim());
-      if(lines.length < 2){ toast('CSV vacío'); return; }
+      if(lines.length < 2){ toast(__t('CSV vacío')); return; }
       // Autodetect columns: Govee exports usually have Timestamp, Temperature, Humidity
       const header = lines[0].toLowerCase();
       const cols = header.split(',');
       const idxT = cols.findIndex(c=>c.includes('temp'));
       const idxH = cols.findIndex(c=>c.includes('humid'));
       const idxDate = cols.findIndex(c=>c.includes('time') || c.includes('date'));
-      if(idxDate<0 || (idxT<0 && idxH<0)){ toast('No reconozco el formato del CSV'); return; }
+      if(idxDate<0 || (idxT<0 && idxH<0)){ toast(__t('No reconozco el formato del CSV')); return; }
       if(!b.envLog) b.envLog = [];
       let added = 0;
       lines.slice(1).forEach(line=>{
@@ -3877,9 +3878,9 @@ function importGoveeCsv(event, batchId){
         added++;
       });
       saveDB();
-      toast(`${added} registros importados`);
+      toast(__tt`${added} registros importados`);
       openEnvLogModal(batchId);
-    }catch(err){ toast('Error leyendo CSV: '+err.message); }
+    }catch(err){ toast(__t('Error leyendo CSV: ')+err.message); }
   };
   reader.readAsText(file);
 }
@@ -3980,23 +3981,23 @@ function saveTasting(batchId, tastingId){
   const idx = tastingId ? b.tastings.findIndex(x=>x.id===tastingId) : -1;
   if(idx>=0) b.tastings[idx] = rec; else b.tastings.push(rec);
   syncLatestTasting(b);
-  saveDB(); closeModal(); render(); toast(idx>=0?'Cata actualizada':'Cata guardada');
+  saveDB(); closeModal(); render(); toast(idx>=0?__t('Cata actualizada'):__t('Cata guardada'));
 }
 
 function deleteTasting(batchId, tastingId){
   const b = db.batches.find(x=>x.id===batchId); if(!b) return;
-  if(!__confirm('¿Eliminar esta cata?')) return;
+  if(!__confirm(__t('¿Eliminar esta cata?'))) return;
   tastingList(b);
   b.tastings = b.tastings.filter(x=>x.id!==tastingId);
   syncLatestTasting(b);
-  saveDB(); closeModal(); render(); toast('Cata eliminada');
+  saveDB(); closeModal(); render(); toast(__t('Cata eliminada'));
 }
 
 function discardBatch(id){
   const b = db.batches.find(x=>x.id===id);
   if(b.status==='discarded'){ b.status='in_progress'; saveDB(); render(); return; }
-  if(!__confirm(`¿Descartar lote ${b.ref}?\n\nQueda oculto pero recuperable. Para eliminarlo permanentemente usá "Eliminar permanentemente".`)) return;
-  b.status='discarded'; saveDB(); render(); toast('Lote descartado · recuperable');
+  if(!__confirm(__tt`¿Descartar lote ${b.ref}?\n\nQueda oculto pero recuperable. Para eliminarlo permanentemente usá "Eliminar permanentemente".`)) return;
+  b.status='discarded'; saveDB(); render(); toast(__t('Lote descartado · recuperable'));
 }
 
 function deleteBatchHard(id){
@@ -4006,21 +4007,21 @@ function deleteBatchHard(id){
   const logCount = b.pieces?.reduce((s,p)=>s+(p.weightLogs||[]).length,0) || 0;
   const envCount = (b.envLog||[]).length;
   const details = [
-    `${pieceCount} pieza${pieceCount===1?'':'s'}`,
-    `${logCount} registro${logCount===1?'':'s'} de peso`,
-    envCount>0 ? `${envCount} registros T/HR Govee` : null,
+    __tt`${pieceCount} pieza${pieceCount===1?'':'s'}`,
+    __tt`${logCount} registro${logCount===1?'':'s'} de peso`,
+    envCount>0 ? __tt`${envCount} registros T/HR Govee` : null,
     tastingList(b).length ? tastingList(b).length+' cata(s)' : null,
-    b.receiving ? 'PCC HACCP de recepción' : null,
-    'historial de etapas'
+    b.receiving ? __t('PCC HACCP de recepción') : null,
+    __t('historial de etapas')
   ].filter(Boolean).join(' · ');
   openSafeDeleteModal({
     kind: 'lote',
     label: b.ref + ' — ' + b.typeName,
     details: details + '.',
-    warning: 'Esta acción es irreversible. Si tenés un backup reciente (pestaña Biblioteca) podrás restaurarlo.',
+    warning: __t('Esta acción es irreversible. Si tenés un backup reciente (pestaña Biblioteca) podrás restaurarlo.'),
     onConfirm: ()=>{
       db.batches = db.batches.filter(x=>x.id!==id);
-      saveDB(); goto('batches'); toast('Lote eliminado permanentemente');
+      saveDB(); goto('batches'); toast(__t('Lote eliminado permanentemente'));
     }
   });
 }
@@ -4033,7 +4034,7 @@ function createNewType(){
     stages:[]
   };
   db.types.push(t);
-  saveDB(); goto('type-editor',{typeId:t.id}); toast('Tipo creado');
+  saveDB(); goto('type-editor',{typeId:t.id}); toast(__t('Tipo creado'));
 }
 
 function duplicateType(id){
@@ -4042,7 +4043,7 @@ function duplicateType(id){
   nt.id = uid('typ'); nt.name = t.name+' (copia)'; nt.ref = t.ref.slice(0,3)+'CPY';
   nt.stages.forEach(s=> s.id = uid('stg'));
   db.types.push(nt);
-  saveDB(); goto('type-editor',{typeId:nt.id}); toast('Tipo duplicado');
+  saveDB(); goto('type-editor',{typeId:nt.id}); toast(__t('Tipo duplicado'));
 }
 
 function deleteType(id){
@@ -4052,13 +4053,13 @@ function deleteType(id){
   openSafeDeleteModal({
     kind: 'tipo (receta madre)',
     label: t.name + ' — ' + t.ref,
-    details: `${(t.stages||[]).length} etapas · ${(t.stages||[]).reduce((s,st)=>s+(st.recipe||[]).length,0)} ingredientes en recetas.`,
+    details: __tt`${(t.stages||[]).length} etapas · ${(t.stages||[]).reduce((s,st)=>s+(st.recipe||[]).length,0)} ingredientes en recetas.`,
     warning: usedInBatches>0
-      ? `Hay ${usedInBatches} lote${usedInBatches===1?'':'s'} creado${usedInBatches===1?'':'s'} de este tipo — mantendrán su copia local de la receta y seguirán funcionando. El tipo madre desaparece de la biblioteca.`
-      : 'No hay lotes creados desde este tipo. La acción es irreversible salvo que lo recrees manualmente.',
+      ? __tt`Hay ${usedInBatches} lote${usedInBatches===1?'':'s'} creado${usedInBatches===1?'':'s'} de este tipo — mantendrán su copia local de la receta y seguirán funcionando. El tipo madre desaparece de la biblioteca.`
+      : __t('No hay lotes creados desde este tipo. La acción es irreversible salvo que lo recrees manualmente.'),
     onConfirm: ()=>{
       db.types = db.types.filter(t=>t.id!==id);
-      saveDB(); goto('types'); toast('Tipo eliminado permanentemente');
+      saveDB(); goto('types'); toast(__t('Tipo eliminado permanentemente'));
     }
   });
 }
@@ -4130,7 +4131,7 @@ function moveStage(typeId, idx, dir){
 }
 
 function removeStage(typeId, idx){
-  if(!__confirm('¿Eliminar esta etapa?')) return;
+  if(!__confirm(__t('¿Eliminar esta etapa?'))) return;
   const t = db.types.find(x=>x.id===typeId);
   t.stages.splice(idx,1); saveDB(); render();
 }
@@ -4152,7 +4153,7 @@ function addStage(typeId, kind){
 
 function saveIngredient(){
   const n = __el('ing-n').value.trim();
-  if(!n){ toast('Nombre requerido'); return; }
+  if(!n){ toast(__t('Nombre requerido')); return; }
   const cat = __el('ing-c').value;
   const densRaw = __el('ing-dens')?.value;
   const gPerTsp = (cat==='sal'||cat==='sal-curado') && densRaw!=='' && densRaw!=null ? +densRaw : null;
@@ -4161,10 +4162,10 @@ function saveIngredient(){
   saveDB(); closeModal(); render();
   if(cat === 'carne'){
     // Encadenar al editor para completar clasificación + perfil nutricional
-    toast('Carne creada — completa su clasificación y nutrientes');
+    toast(__t('Carne creada — completa su clasificación y nutrientes'));
     editIngredientPrompt(id);
   } else {
-    toast('Ingrediente creado');
+    toast(__t('Ingrediente creado'));
   }
 }
 
@@ -4177,14 +4178,14 @@ function deleteIngredient(id){
     kind: 'ingrediente',
     label: ing.name + (ing.category?` (${ing.category})`:''),
     details: u.total>0
-      ? `Usado en ${u.types} receta${u.types===1?'':'s'} madre${u.batches?` y ${u.batches} lote${u.batches===1?'':'s'}`:''}${detail?` — ${detail}`:''}.`
-      : 'Sin uso actual en recetas ni lotes.',
+      ? __tt`Usado en ${u.types} receta${u.types===1?'':'s'} madre${u.batches?__tt` y ${u.batches} lote${u.batches===1?'':'s'}`:''}${detail?` — ${detail}`:''}.`
+      : __t('Sin uso actual en recetas ni lotes.'),
     warning: u.total>0
-      ? `Las recetas y lotes que lo usan quedarán con referencias rotas. Considerá reemplazarlo primero antes de eliminarlo.`
-      : 'No está en uso. Acción irreversible salvo recrear.',
+      ? __tt`Las recetas y lotes que lo usan quedarán con referencias rotas. Considerá reemplazarlo primero antes de eliminarlo.`
+      : __t('No está en uso. Acción irreversible salvo recrear.'),
     onConfirm: ()=>{
       db.ingredients = db.ingredients.filter(i=>i.id!==id);
-      saveDB(); render(); toast('Ingrediente eliminado permanentemente');
+      saveDB(); render(); toast(__t('Ingrediente eliminado permanentemente'));
     }
   });
 }
@@ -4195,7 +4196,7 @@ function saveIngredientEdit(){
   if(!ing) return;
   const newName = __el('ing-en').value.trim();
   const oldName = ing.name;
-  if(!newName){ toast('Nombre requerido'); return; }
+  if(!newName){ toast(__t('Nombre requerido')); return; }
   ing.name = newName;
   ing.unit = __el('ing-eu').value;
   ing.category = __el('ing-ec').value;
@@ -4243,9 +4244,9 @@ function saveIngredientEdit(){
         if(s.brine && s.brine.saltIngredient===oldName){ s.brine.saltIngredient=newName; }
       });
     });
-    if(count) toast('Actualizado en '+count+' referencia'+(count===1?'':'s'));
+    if(count) toast(__t('Actualizado en ')+count+' referencia'+(count===1?'':'s'));
   } else {
-    toast('Ingrediente actualizado');
+    toast(__t('Ingrediente actualizado'));
   }
   saveDB(); closeModal(); render();
 }
@@ -4311,20 +4312,20 @@ function icloudSupported(){
 
 async function icloudLink(){
   if(!icloudSupported()){
-    __alert('Tu navegador no soporta la API de acceso al sistema de archivos. Usá Chrome, Edge o Brave en Mac desktop.');
+    __alert(__t('Tu navegador no soporta la API de acceso al sistema de archivos. Usá Chrome, Edge o Brave en Mac desktop.'));
     return;
   }
   try {
     // Suggested name — user should navigate to their iCloud Drive folder (~/Library/Mobile Documents/com~apple~CloudDocs/)
     const handle = await window.showSaveFilePicker({
       suggestedName: 'laforet_cellar.json',
-      types: [{ description: 'La Forêt data', accept: {'application/json': ['.json']} }],
+      types: [{ description: __t('La Forêt data'), accept: {'application/json': ['.json']} }],
     });
     _cloudHandle = handle;
     await idbSet('cloudHandle', handle);
     _cloudStatus = 'linked';
     await icloudPush();
-    toast('Vinculado · el archivo se guardó en iCloud Drive');
+    toast(__t('Vinculado · el archivo se guardó en iCloud Drive'));
     renderIcloudStatus();
     renderSyncModalBody();
   } catch(err){
@@ -4333,11 +4334,11 @@ async function icloudLink(){
 }
 
 async function icloudUnlink(){
-  if(!__confirm('¿Desvincular el archivo iCloud? Los datos locales quedan intactos.')) return;
+  if(!__confirm(__t('¿Desvincular el archivo iCloud? Los datos locales quedan intactos.'))) return;
   _cloudHandle = null;
   _cloudStatus = 'off';
   await idbDel('cloudHandle');
-  toast('Desvinculado');
+  toast(__t('Desvinculado'));
   renderIcloudStatus();
   renderSyncModalBody();
 }
@@ -4353,42 +4354,42 @@ async function icloudEnsurePermission(mode){
 }
 
 async function icloudPush(manual){
-  if(!_cloudHandle){ if(manual) toast('No hay archivo vinculado'); return; }
+  if(!_cloudHandle){ if(manual) toast(__t('No hay archivo vinculado')); return; }
   try {
-    if(!(await icloudEnsurePermission('readwrite'))){ if(manual) toast('Permiso denegado'); return; }
+    if(!(await icloudEnsurePermission('readwrite'))){ if(manual) toast(__t('Permiso denegado')); return; }
     const w = await _cloudHandle.createWritable();
     await w.write(JSON.stringify(db, null, 2));
     await w.close();
     _cloudStatus = 'linked';
     renderIcloudStatus();
-    if(manual) toast('Guardado en iCloud');
+    if(manual) toast(__t('Guardado en iCloud'));
   } catch(err){
     console.error('iCloud push error', err);
     _cloudStatus = 'error';
     renderIcloudStatus();
-    if(manual) toast('Error al guardar');
+    if(manual) toast(__t('Error al guardar'));
   }
 }
 
 async function icloudPull(){
-  if(!_cloudHandle){ toast('Primero vincula el archivo'); return; }
-  if(!(await icloudEnsurePermission('read'))) { toast('Permiso denegado'); return; }
-  if(!__confirm('Cargar datos desde el archivo iCloud vinculado. ¿Reemplazar los datos locales actuales?')) return;
+  if(!_cloudHandle){ toast(__t('Primero vincula el archivo')); return; }
+  if(!(await icloudEnsurePermission('read'))) { toast(__t('Permiso denegado')); return; }
+  if(!__confirm(__t('Cargar datos desde el archivo iCloud vinculado. ¿Reemplazar los datos locales actuales?'))) return;
   try {
     const file = await _cloudHandle.getFile();
     const text = await file.text();
-    if(!text.trim()){ toast('El archivo está vacío'); return; }
+    if(!text.trim()){ toast(__t('El archivo está vacío')); return; }
     db = JSON.parse(text);
     if(typeof migrateSalts==='function') migrateSalts();
       if(typeof migrateWeightLogsToPieces==='function') migrateWeightLogsToPieces();
     saveDBLocal();
     window.db = db;
     render();
-    toast('Datos cargados desde iCloud');
+    toast(__t('Datos cargados desde iCloud'));
     renderSyncModalBody();
   } catch(err){
     console.error('iCloud pull error', err);
-    toast('Error al leer el archivo');
+    toast(__t('Error al leer el archivo'));
   }
 }
 
@@ -4411,18 +4412,18 @@ async function icloudRestoreHandle(){
 }
 
 async function icloudOpenExisting(){
-  if(!icloudSupported()){ __alert('Tu navegador no soporta acceso a archivos. Usá Chrome, Edge o Brave en Mac.'); return; }
+  if(!icloudSupported()){ __alert(__t('Tu navegador no soporta acceso a archivos. Usá Chrome, Edge o Brave en Mac.')); return; }
   try {
     const [handle] = await window.showOpenFilePicker({
-      types: [{ description: 'La Forêt data', accept: {'application/json': ['.json']} }],
+      types: [{ description: __t('La Forêt data'), accept: {'application/json': ['.json']} }],
       multiple: false,
     });
     if(!handle) return;
-    if(!(await ensureHandlePermission(handle, 'readwrite'))){ toast('Permiso denegado'); return; }
+    if(!(await ensureHandlePermission(handle, 'readwrite'))){ toast(__t('Permiso denegado')); return; }
     const file = await handle.getFile();
     const text = await file.text();
     if(text.trim()){
-      if(!__confirm('Cargar los datos de este archivo y vincularlo para sincronizar. ¿Reemplazar los datos locales actuales?')) return;
+      if(!__confirm(__t('Cargar los datos de este archivo y vincularlo para sincronizar. ¿Reemplazar los datos locales actuales?'))) return;
       db = JSON.parse(text);
       if(typeof migrateSalts==='function') migrateSalts();
       if(typeof migrateWeightLogsToPieces==='function') migrateWeightLogsToPieces();
@@ -4433,11 +4434,11 @@ async function icloudOpenExisting(){
     _cloudStatus = 'linked';
     await idbSet('cloudHandle', handle);
     render();
-    toast('Archivo abierto y vinculado');
+    toast(__t('Archivo abierto y vinculado'));
     renderIcloudStatus();
     renderSyncModalBody();
   } catch(err){
-    if(err.name !== 'AbortError'){ console.error(err); toast('No se pudo abrir el archivo'); }
+    if(err.name !== 'AbortError'){ console.error(err); toast(__t('No se pudo abrir el archivo')); }
   }
 }
 
