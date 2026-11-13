@@ -1,0 +1,1 @@
+export const bridge = { render(){}, toast(){}, closeModal(){}, renderIfNoFocus(){}, goto(){}, openBulkWeightModal(){}, openTastingModal(){}, openEnvLogModal(){}, openSafeDeleteModal(){}, renderIcloudStatus(){}, renderSyncModalBody(){}, showModal(){}, updateNavCounts(){}, onSave(){} };

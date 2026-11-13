@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/inter";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/cormorant-garamond/500.css";
+@import "@fontsource/cormorant-garamond/600.css";
+@import "@fontsource/cormorant-garamond/600-italic.css";
+@import "@fontsource/marcellus-sc/400.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@font-face { font-family: "Copperplate"; src: url("/fonts/Copperplate.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "AcademyEngraved"; src: url("/fonts/AcademyEngraved.ttf") format("truetype"); font-display: swap; }
+
+/* ─── La Forêt · light cream theme ───────────────────────────────
+   Brand: Pantone Black C #2D2926 (ink) + Pantone 7527 C #D6D2C4 (cream).
+   Text colors meet WCAG AA (≥ 4.5:1) on --background and --card.   */
+:root {
+  --radius: 0.625rem;
+
+  --background: #F3EFE6;
+  --foreground: #2D2926;
+  --card: #FBF9F4;
+  --card-foreground: #2D2926;
+  --popover: #FFFDF8;
+  --popover-foreground: #2D2926;
+  --primary: #2D2926;
+  --primary-foreground: #F6F2EA;
+  --secondary: #E7E1D3;
+  --secondary-foreground: #2D2926;
+  --muted: #ECE7DC;
+  --muted-foreground: #675F56;
+  --accent: #E9E3D5;
+  --accent-foreground: #2D2926;
+  --destructive: #B0372B;
+  --border: #DDD6C7;
+  --input: #D3CBBB;
+  --ring: #9C7A3C;
+
+  /* brand + semantic */
+  --brand-cream: #D6D2C4;
+  --gold: #9C7A3C;
+  --gold-ink: #775B27;
+  --success: #3F6E2A;
+  --success-soft: #E3EBD5;
+  --warning: #8F5A0B;
+  --warning-soft: #F5E6C8;
+  --danger: #B0372B;
+  --danger-soft: #F5DCD6;
+  --info: #2F6787;
+  --info-soft: #DCE8EF;
+
+  /* stage palette, tuned for cream backgrounds (white text passes on fills) */
+  --s-cur: #A7782F;
+  --s-sal: #946C30;
+  --s-slz: #7E5B28;
+  --s-ado: #B85724;
+  --s-fer: #C0662E;
+  --s-sec: #973527;
+  --s-bal: #3F7699;
+  --s-mad: #5C7A2B;
+  --s-ahum: #6E5446;
+
+  --sidebar: #EAE4D6;
+  --sidebar-foreground: #2D2926;
+  --sidebar-accent: #DED6C4;
+  --sidebar-border: #D6CEBD;
+
+  --chart-1: #A7782F; --chart-2: #973527; --chart-3: #5C7A2B; --chart-4: #3F7699; --chart-5: #6E5446;
+}
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-brand: "Copperplate", "Marcellus SC", serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    /* faint paper grain */
+    background-image: radial-gradient(rgba(45,41,38,.035) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+  .tabular { font-variant-numeric: tabular-nums; }
+}
+
+/* projected (estimated) gantt segments */
+.seg-proj {
+  background-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--seg) 32%, transparent) 0 5px, color-mix(in srgb, var(--seg) 12%, transparent) 5px 10px);
+  border: 1px dashed var(--seg);
+}
