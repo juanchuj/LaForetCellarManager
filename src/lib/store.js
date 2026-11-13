@@ -22,6 +22,8 @@ bridge.renderIfNoFocus = notify;
 bridge.updateNavCounts = () => {};
 
 core.bootDB();
+// reconnect the iCloud Drive file handle saved in IndexedDB (same as v4.4.3 boot)
+if (typeof indexedDB !== 'undefined') core.icloudRestoreHandle?.();
 
 // Another tab (e.g. v4.4.3 open side by side) wrote the same storage key → reload.
 if (typeof window !== 'undefined') {

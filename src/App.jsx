@@ -1,21 +1,30 @@
 import { useRoute } from '@/lib/router';
-import { AppSidebar, NAV } from '@/components/app-sidebar';
+import { AppSidebar } from '@/components/app-sidebar';
 import { MobileTopbar } from '@/components/mobile-topbar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { Dashboard } from '@/views/Dashboard';
 import { Timeline } from '@/views/Timeline';
 import { Batches } from '@/views/Batches';
-import { BatchOverview } from '@/views/BatchOverview';
-import { Placeholder } from '@/views/Placeholder';
+import { BatchDetail } from '@/views/batch/BatchDetail';
+import { DialogHost } from '@/dialogs/DialogHost';
+import { Library } from '@/views/Library';
+import { Analytics } from '@/views/Analytics';
+import { Defects } from '@/views/Defects';
+import { Types, TypeEditor } from '@/views/Types';
+import { Ingredients } from '@/views/Ingredients';
 
 function Page() {
   const { section, id } = useRoute();
   if (section === 'panel') return <Dashboard />;
   if (section === 'cava') return <Timeline />;
-  if (section === 'lotes') return id ? <BatchOverview id={id} /> : <Batches />;
-  const item = NAV.find((n) => n.key === section);
-  return item ? <Placeholder item={item} /> : <Dashboard />;
+  if (section === 'lotes') return id ? <BatchDetail id={id} /> : <Batches />;
+  if (section === 'tipos') return id ? <TypeEditor id={id} /> : <Types />;
+  if (section === 'ingredientes') return <Ingredients />;
+  if (section === 'biblioteca') return <Library />;
+  if (section === 'analytics') return <Analytics />;
+  if (section === 'defectos') return <Defects />;
+  return <Dashboard />;
 }
 
 export default function App() {
@@ -31,6 +40,7 @@ export default function App() {
           </main>
         </div>
       </div>
+      <DialogHost />
       <Toaster />
     </TooltipProvider>
   );

@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { ArrowRight, ChevronRight, CircleCheck, Info, Layers, OctagonAlert, Package, PackageCheck, Plus, Scale, TriangleAlert, Weight } from 'lucide-react';
 import { useDB, core } from '@/lib/store';
 import { navigate } from '@/lib/router';
-import { pending } from '@/lib/notify';
 import { AGENDA_KIND, batchRow, fmt, fmtG, greenWeight, stageVar } from '@/lib/domain';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/page-header';
@@ -36,8 +35,8 @@ export function Dashboard() {
         description={`${active.length} lote${active.length === 1 ? '' : 's'} activo${active.length === 1 ? '' : 's'} · ${fmtG(totalG)} en verde · ${db.types.length} recetas madre`}
         actions={
           <>
-            <Button variant="outline" onClick={() => pending('La jornada de pesaje')}><Scale /> Jornada de pesaje</Button>
-            <Button onClick={() => pending('El asistente de nuevo lote')}><Plus /> Nuevo lote</Button>
+            <Button variant="outline" onClick={() => core.openWeighSession()}><Scale /> Jornada de pesaje</Button>
+            <Button onClick={() => core.openNewBatchModal()}><Plus /> Nuevo lote</Button>
           </>
         }
       />

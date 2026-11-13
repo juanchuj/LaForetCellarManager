@@ -17,6 +17,15 @@ const renderIcloudStatus = (...a) => bridge.renderIcloudStatus(...a);
 const renderSyncModalBody = (...a) => bridge.renderSyncModalBody(...a);
 const showModal = (...a) => bridge.showModal(...a);
 const updateNavCounts = (...a) => bridge.updateNavCounts(...a);
+const renderNewBatchModal = (...a) => bridge.renderNewBatchModal(...a);
+const renderWeighSession = (...a) => bridge.renderWeighSession(...a);
+const editIngredientPrompt = (...a) => bridge.editIngredientPrompt(...a);
+const renderFlowStage = (...a) => bridge.renderFlowStage(...a);
+const openSecadoStartModal = (...a) => bridge.openSecadoStartModal(...a);
+const __el = (id) => bridge.el(id);
+const __win = bridge.win;
+const __confirm = (msg) => bridge.confirm(msg);
+const __alert = (msg) => bridge.alert(msg);
 
 const LS_KEY = 'laforet_cellar_v1';
 
@@ -588,6 +597,38 @@ function loadExampleRecipe(){
   toast('Receta de ejemplo cargada: Lomo Español');
 }
 
+function exportDB(){
+  const blob = new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'laforet_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  toast('Base de datos exportada');
+}
+
+function exportLibrary(scope){
+  scope = scope || 'all';
+  const payload = {
+    kind: 'laforet-library',
+    scope,
+    version: 1,
+    exportedAt: new Date().toISOString(),
+  };
+  if(scope === 'all' || scope === 'ingredients') payload.ingredients = db.ingredients;
+  if(scope === 'all' || scope === 'types')       payload.types = db.types;
+
+  const labels = { all:'biblioteca', ingredients:'ingredientes', types:'recetas' };
+  const blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `laforet_${labels[scope]}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  const parts = [];
+  if(payload.types) parts.push(`${payload.types.length} recetas`);
+  if(payload.ingredients) parts.push(`${payload.ingredients.length} ingredientes`);
+  toast(`Exportado: ${parts.join(' · ')}`);
+}
+
 function applyLibraryImport(payload){
   // Acepta biblioteca completa, solo-ingredientes, solo-recetas, o un export completo de DB
   const srcIngs  = payload.ingredients || [];
@@ -675,7 +716,7 @@ function restoreSalts(){
 }
 
 function resetDB(){
-  if(!confirm('Esto BORRA todo: ingredientes, recetas y lotes. La app queda en blanco. Se perderán lotes y ediciones. ¿Continuar?')) return;
+  if(!__confirm('Esto BORRA todo: ingredientes, recetas y lotes. La app queda en blanco. Se perderán lotes y ediciones. ¿Continuar?')) return;
   seedDB(); render(); toast('Datos borrados — app en blanco. Importá tu Biblioteca JSON o creá desde cero.');
 }
 
@@ -1165,6 +1206,16 @@ function recordDeviation(batchId, data){
     author: 'operador'
   });
   saveDB();
+}
+
+function saveDeviation(batchId, pccId, pccLabel){
+  const desc = __el('dev-desc').value.trim();
+  const action = __el('dev-action').value.trim();
+  const outcome = __el('dev-outcome').value;
+  if(!desc){ toast('Describí qué pasó'); return; }
+  if(outcome==='accepted' && desc.length < 10){ toast('Escribí el motivo de la aceptación (mínimo 10 caracteres)'); return; }
+  recordDeviation(batchId, { pccId, pccLabel, description: desc, action, outcome });
+  closeModal(); render(); toast('Desviación registrada');
 }
 
 function diffusivitySaltMeat({tempC=5, fatPct=20}){
@@ -2511,6 +2562,18 @@ function listBackups(){
   return list;
 }
 
+function downloadBackup(){
+  const list = listBackups();
+  const payload = list.length>0 ? JSON.parse(localStorage.getItem(list[0].key)).db : db;
+  const date = list.length>0 ? list[0].date : toISODate(new Date());
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `laforet_backup_${date}.json`;
+  a.click();
+  toast('Backup descargado · '+date);
+}
+
 function commitHistoricalImport(resolved){
   if(!resolved || !resolved.length){ return; }
   try{
@@ -2538,7 +2601,7 @@ function commitHistoricalImport(resolved){
 }
 
 function restoreBackup(key){
-  if(!confirm('Restaurar este backup reemplazará TODOS los datos actuales. ¿Continuar?')) return;
+  if(!__confirm('Restaurar este backup reemplazará TODOS los datos actuales. ¿Continuar?')) return;
   try{
     const data = JSON.parse(localStorage.getItem(key));
     if(!data || !data.db) throw new Error('backup inválido');
@@ -3217,6 +3280,236 @@ function meatMetaTag(ing){
   return `${animal} · genérica${fat?' · '+fat:''}`;
 }
 
+function openEditBatchModal(batchId){
+  const b = db.batches.find(x=>x.id===batchId);
+  if(!b){ toast('Lote no encontrado'); return; }
+  if(b.status==='done'){
+    if(!__confirm('Este lote esta terminado. Editar puede alterar sus datos historicos. Continuar?')) return;
+  }
+  // Populate _newBatch with existing data — same shape as new batch
+  // Extract current salt from first Curado stage as the "override" baseline
+  const curedStage = (b.stages||[]).find(s=>s.kind==='Curado' && s.brine);
+  const currentCommonSalt = curedStage?.brine?.saltIngredient || null;
+  const currentCureSalt = curedStage?.brine?.cureSalt?.ingredient || null;
+  __win._newBatch = {
+    editingBatchId: batchId,
+    typeId: b.typeId,
+    lot: b.lot||'',
+    startedAt: toISODate(new Date(b.startedAt)),
+    targetYield: b.targetYield,
+    ebPlus20: b.ebPlus20 !== false,
+    notes: b.notes||'',
+    pieces: b.pieces.map(p=>({
+      id: p.id,
+      code: p.code,
+      initialWeight: p.initialWeight,
+      thickness: p.thickness,
+      shape: p.shape,
+      notes: p.notes||''
+    })),
+    saltOverrides: { commonSalt: currentCommonSalt, cureSalt: currentCureSalt, cureSaltSet: true },
+    receiving: b.receiving || { coreT:null, provider:'', farm:'', slaughterDate:'', cut:'', acceptance:'pending', notes:'' }
+  };
+  renderNewBatchModal();
+}
+
+function openNewBatchModal(){
+  const typeId = db.types[0]?.id;
+  __win._newBatch = {
+    typeId, lot:'',
+    startedAt: toISODate(new Date()),
+    targetYield: db.types.find(t=>t.id===typeId)?.yield.target || 60,
+    pieces: [{ initialWeight: 1000, thickness: 6, shape:'tubular', notes:'' }],
+    ebPlus20: true,
+    notes:'',
+    saltOverrides: { commonSalt: null, cureSalt: null, cureSaltSet: false },
+    receiving: {
+      coreT: null,
+      provider: '',
+      farm: '',
+      slaughterDate: '',
+      cut: '',
+      acceptance: 'pending',
+      notes: ''
+    }
+  };
+  renderNewBatchModal();
+}
+
+function createBatch(){
+  const nb = __win._newBatch;
+  const type = db.types.find(t=>t.id===nb.typeId);
+  if(!type){ toast('Selecciona un tipo'); return; }
+  if(nb.pieces.length===0){ toast('Agrega al menos una pieza'); return; }
+
+  // Edit mode: update existing batch instead of creating a new one
+  if(nb.editingBatchId){
+    const b = db.batches.find(x=>x.id===nb.editingBatchId);
+    if(b){
+      // Sync ref ← lot change (if lot has numeric content and ref would change)
+      const newRef = refFromLot(type.ref, nb.lot) || b.ref;
+      if(newRef !== b.ref){
+        const collision = db.batches.some(x => x.ref === newRef && x.id !== b.id);
+        if(collision){ toast('Ya existe un lote con ref '+newRef+' · usá otro número'); return; }
+        // Rename piece codes that follow the old ref+letter pattern
+        const oldRef = b.ref;
+        b.pieces.forEach((p,i)=>{
+          if(!p.code || p.code.startsWith(oldRef)){
+            p.code = newRef + String.fromCharCode(65+i);
+          }
+        });
+        b.ref = newRef;
+      }
+      b.lot = nb.lot;
+      b.notes = nb.notes;
+      b.targetYield = nb.targetYield;
+      b.ebPlus20 = nb.ebPlus20;
+      if(nb.receiving) b.receiving = nb.receiving;
+      // Merge pieces: preserve existing weightLogs by matching piece.id
+      const existingById = {}; b.pieces.forEach(p=>{ existingById[p.id] = p; });
+      b.pieces = nb.pieces.map((p, i)=>{
+        const existing = p.id ? existingById[p.id] : null;
+        const code = p.code || (b.ref + String.fromCharCode(65+i));
+        return {
+          id: p.id || uid('pc'),
+          code,
+          initialWeight: +p.initialWeight,
+          thickness: +p.thickness,
+          shape: p.shape,
+          notes: p.notes||'',
+          weightLogs: existing ? (existing.weightLogs||[]) : []
+        };
+      });
+      // Recompute stage timeline based on possibly-changed thickness and start date.
+      // Use parseLocalDate to avoid UTC timezone shift.
+      const maxThickness = Math.max(...b.pieces.map(p=>+p.thickness||0), 1);
+      const shape = b.pieces[0]?.shape || 'tubular';
+      const plus20 = b.ebPlus20 !== false;
+      const startLocal = parseLocalDate(nb.startedAt);
+      let cursor = new Date(startLocal);
+      b.startedAt = startLocal.toISOString();
+      b.stages.forEach(s=>{
+        let d = s.dEst;
+        const typeStage = type.stages.find(ts => ts.kind === s.kind);
+        if(s.kind==='Curado' && (s.eb || (typeStage && typeStage.eb))){
+          d = ebDays(maxThickness, shape, plus20);
+          s.dEst = d;
+        }
+        // Apply salt overrides to any Curado brine on this batch
+        if(s.kind==='Curado' && s.brine){
+          if(nb.saltOverrides?.commonSalt) s.brine.saltIngredient = nb.saltOverrides.commonSalt;
+          if(nb.saltOverrides?.cureSaltSet){
+            if(!s.brine.cureSalt) s.brine.cureSalt = { ingredient:null, gPerKg:0 };
+            s.brine.cureSalt.ingredient = nb.saltOverrides.cureSalt;
+          }
+        }
+        // Only reset dates for stages not yet done
+        if(!s.done){
+          s.startedAt = new Date(cursor).toISOString();
+          const end = addDays(cursor, d);
+          s.expectedEnd = new Date(end).toISOString();
+          cursor = new Date(end);
+        } else {
+          cursor = parseLocalDate(s.actualEnd || s.expectedEnd);
+        }
+      });
+      saveDB();
+      closeModal();
+      render();
+      toast('Lote '+b.ref+' actualizado');
+      return;
+    }
+  }
+
+  // Ref derived from user-entered lot if numeric; otherwise next available sequence
+  let ref;
+  const fromLot = refFromLot(type.ref, nb.lot);
+  if(fromLot){
+    const collision = db.batches.some(x => x.ref === fromLot);
+    if(collision){ toast('Ya existe un lote con ref '+fromLot+' · usá otro lote o dejalo vacío'); return; }
+    ref = fromLot;
+  } else {
+    ref = nextRefFor(type.ref);
+    // Auto-fill lot from ref sequence if user left it blank
+    if(!nb.lot){ nb.lot = ref.replace(type.ref,''); }
+  }
+  const maxThickness = Math.max(...nb.pieces.map(p=>+p.thickness||0), 1);
+  const shape = nb.pieces[0]?.shape || 'tubular';
+  const plus20 = nb.ebPlus20 !== false;
+  let cursor = parseLocalDate(nb.startedAt);
+  const stages = type.stages.map(s=>{
+    let d = s.dEst;
+    if(s.kind==='Curado' && s.eb) d = ebDays(maxThickness, shape, plus20);
+    const startedAt = new Date(cursor).toISOString();
+    const expectedEnd = addDays(cursor, d);
+    cursor = new Date(expectedEnd);
+    // Deep-copy brine (with nested cureSalt) to avoid mutating the type when the batch is edited.
+    // Apply per-batch salt overrides if set.
+    let brineCopy = null;
+    if(s.brine){
+      brineCopy = {
+        saltPct: s.brine.saltPct,
+        waterPct: s.brine.waterPct,
+        saltIngredient: (nb.saltOverrides?.commonSalt) || s.brine.saltIngredient,
+        cureSalt: s.brine.cureSalt ? { ...s.brine.cureSalt } : { ingredient:null, gPerKg:0 }
+      };
+      if(nb.saltOverrides?.cureSaltSet){
+        brineCopy.cureSalt.ingredient = nb.saltOverrides.cureSalt;
+      }
+    } else if(s.kind==='Curado'){
+      brineCopy = {
+        saltPct: 2.8,
+        waterPct: 0,
+        saltIngredient: (nb.saltOverrides?.commonSalt) || defaultCommonSaltName(),
+        cureSalt: { ingredient: (nb.saltOverrides?.cureSalt)||null, gPerKg:0 }
+      };
+    }
+    return {
+      kind: s.kind,
+      shape: s.shape || null,
+      eb: s.eb || false,
+      startedAt, expectedEnd,
+      dEst: d,
+      done: false, actualEnd: null,
+      brine: brineCopy,
+      recipe: (s.recipe||[]).map(r=>({...r})),
+      inoc: s.inoc? {...s.inoc} : null,
+      env: s.env? {...s.env} : null,
+      ph: s.ph? {...s.ph} : null,
+      smoke: s.smoke ? { ...s.smoke, woods: (s.smoke.woods||[]).slice() } : null,
+      press: s.press||false,
+      notes:''
+    };
+  });
+
+  const batch = {
+    id: uid('bat'),
+    ref, lot: nb.lot,
+    typeId: type.id, typeName: type.name, typeRef: type.ref,
+    ebPlus20: plus20,
+    status:'in_progress',
+    startedAt: parseLocalDate(nb.startedAt).toISOString(),
+    targetYield: nb.targetYield,
+    pieces: nb.pieces.map((p,i)=>({
+      id: uid('pc'),
+      code: ref + String.fromCharCode(65+i),
+      initialWeight:+p.initialWeight,
+      thickness:+p.thickness,
+      shape:p.shape,
+      notes:p.notes||'',
+      weightLogs: []
+    })),
+    stages,
+    phLogs: [],
+    receiving: nb.receiving || null,
+    envLog: [],
+    tasting: null,
+    notes: nb.notes || ''
+  };
+  db.batches.push(batch);
+  saveDB(); closeModal(); goto('batch-detail',{batchId:batch.id}); toast('Lote '+ref+' creado');
+}
+
 function completeStage(batchId, idx){
   const b = db.batches.find(x=>x.id===batchId);
   const s = b.stages[idx];
@@ -3236,12 +3529,98 @@ function completeStage(batchId, idx){
   saveDB(); render(); toast('Etapa completada');
 }
 
+function saveStageDates(batchId, idx){
+  const b = db.batches.find(x=>x.id===batchId);
+  const s = b.stages[idx];
+  s.startedAt = new Date(__el('ss').value).toISOString();
+  s.expectedEnd = new Date(__el('se').value).toISOString();
+  // propagate
+  let cursor = new Date(s.expectedEnd);
+  for(let i=idx+1;i<b.stages.length;i++){
+    const ns = b.stages[i];
+    ns.startedAt = new Date(cursor).toISOString();
+    ns.expectedEnd = addDays(cursor, ns.dEst);
+    cursor = new Date(ns.expectedEnd);
+  }
+  saveDB(); closeModal(); render(); toast('Fechas actualizadas');
+}
+
 function openWeightLogModal(batchId){ openBulkWeightModal(batchId); }
+
+function saveSecadoStart(batchId){
+  const b = db.batches.find(x=>x.id===batchId);
+  const s = findSecadoStage(b);
+  if(!s) return;
+  const lossPct = +__el('sec-loss-pct').value;
+  if(!(lossPct > 0 && lossPct < 100)){ toast('Ingresa un % de perdida valido (0-100)'); return; }
+  const startWeights = {};
+  let missing = 0;
+  const tarePctRaw = +__el('sec-tare-pct').value;
+  const tarePct = (tarePctRaw >= 0 && tarePctRaw <= 5) ? tarePctRaw : 0.75;
+  b.pieces.forEach(p=>{
+    const w = +__el('ssw-'+p.id).value;
+    if(w > 0) startWeights[p.id] = w;
+    else missing++;
+    if(w > 0){
+      if(tarePct > 0) p.tare = Math.round(w * tarePct / 100 * 10) / 10; else delete p.tare;
+    }
+  });
+  db.tarePct = tarePct;
+  if(missing > 0){ toast('Falta el peso inicial de '+missing+' pieza(s)'); return; }
+  s.lossTargetPct = lossPct;
+  s.startWeights = startWeights;
+  if(!s.startedAt) s.startedAt = new Date().toISOString();
+  saveDB();
+  closeModal();
+  render();
+  toast('Secado iniciado · objetivos calculados por pieza');
+}
+
+function savePieceWeightLog(batchId, pieceId){
+  const b = db.batches.find(x=>x.id===batchId);
+  const p = b.pieces.find(x=>x.id===pieceId);
+  const w = +__el('wl-weight').value;
+  if(!w){ toast('Ingresa un peso'); return; }
+  const dateISO = parseLocalDate(__el('wl-date').value).toISOString();
+  // #12 Reconciliación de pesos sospechosos
+  const sus = isWeightSuspicious(p, w, dateISO);
+  if(sus){
+    const confirmed = __confirm(`${sus.msg}\n\n¿Es correcto el peso ${w}g? (Cancelar = no guardar; OK = guardar como posible outlier)`);
+    if(!confirmed){ return; }
+  }
+  p.weightLogs = p.weightLogs || [];
+  p.weightLogs.push({
+    id: uid('wl'),
+    date: dateISO,
+    weight: w,
+    note: __el('wl-note').value,
+    outlier: sus ? false : undefined,  // user can toggle later
+    suspicious: sus ? sus.kind : undefined
+  });
+  saveDB(); closeModal(); render(); toast(sus ? '⚠ Peso registrado (marcado como sospechoso)' : 'Peso registrado para '+p.code);
+}
+
+function saveAwReading(batchId, pieceId){
+  const b = db.batches.find(x=>x.id===batchId); const p = b?.pieces.find(x=>x.id===pieceId);
+  if(!p) return;
+  const aw = +__el('aw-val').value;
+  if(!(aw>=0.5 && aw<=1)){ toast('Ingresá un aw entre 0.500 y 1.000'); return; }
+  const w = +__el('aw-w').value;
+  p.awReadings = p.awReadings || [];
+  p.awReadings.push({
+    id: uid('aw'),
+    date: parseLocalDate(__el('aw-date').value).toISOString(),
+    aw, weightG: w>0 ? w : latestPieceWeight(p, b),
+    instrument: __el('aw-inst').value.trim(),
+    note: __el('aw-note').value.trim()
+  });
+  saveDB(); closeModal(); render(); toast('aw medido registrado · '+p.code);
+}
 
 function removeAwReading(batchId, pieceId, id){
   const b = db.batches.find(x=>x.id===batchId); const p = b?.pieces.find(x=>x.id===pieceId);
   if(!p) return;
-  if(!confirm('¿Eliminar esta medición de aw?')) return;
+  if(!__confirm('¿Eliminar esta medición de aw?')) return;
   p.awReadings = (p.awReadings||[]).filter(r=>r.id!==id);
   saveDB(); render();
 }
@@ -3251,6 +3630,30 @@ function removePieceWeightLog(batchId, pieceId, logId){
   const p = b.pieces.find(x=>x.id===pieceId);
   p.weightLogs = (p.weightLogs||[]).filter(l=>l.id!==logId);
   saveDB(); render();
+}
+
+function saveBulkWeightLog(batchId){
+  const b = db.batches.find(x=>x.id===batchId);
+  const date = parseLocalDate(__el('bwl-date').value).toISOString();
+  const note = __el('bwl-note').value;
+  let count = 0, suspiciousCount = 0;
+  b.pieces.forEach(p=>{
+    const el = __el('bwl-'+p.id);
+    const w = +el.value;
+    if(w>0){
+      const sus = isWeightSuspicious(p, w, date);
+      if(sus) suspiciousCount++;
+      p.weightLogs = p.weightLogs || [];
+      p.weightLogs.push({
+        id: uid('wl'), date, weight:w, note,
+        suspicious: sus ? sus.kind : undefined
+      });
+      count++;
+    }
+  });
+  if(count===0){ toast('No se ingresó ningún peso'); return; }
+  saveDB(); closeModal(); render();
+  toast(count+' peso'+(count===1?'':'s')+' registrado'+(count===1?'':'s') + (suspiciousCount?` · ${suspiciousCount} ⚠ sospechoso${suspiciousCount===1?'':'s'}`:''));
 }
 
 function toggleOutlier(batchId, pieceId, logId){
@@ -3322,9 +3725,26 @@ function phRecommendations(ph, ctx){
   return recos;
 }
 
+function savePh(batchId, stageIdx){
+  const b = db.batches.find(x=>x.id===batchId);
+  b.phLogs = b.phLogs || [];
+  const existing = b.phLogs.find(p=>p.stageIdx===stageIdx);
+  const sVal = __el('ph-s').value;
+  const eVal = __el('ph-e').value;
+  const data = {
+    stageIdx,
+    phStart: sVal===''? null : parseFloat(sVal),
+    phEnd: eVal===''? null : parseFloat(eVal),
+    note: __el('ph-n').value
+  };
+  if(existing) Object.assign(existing, data);
+  else b.phLogs.push(data);
+  saveDB(); closeModal(); render(); toast('pH registrado');
+}
+
 function finishBatch(id){
   const b = db.batches.find(x=>x.id===id);
-  if(!confirm(`¿Marcar lote ${b.ref} como terminado?`)) return;
+  if(!__confirm(`¿Marcar lote ${b.ref} como terminado?`)) return;
   b.status='done'; b.finishedAt=new Date().toISOString();
   b.stages.forEach(s=>{ if(!s.done){ s.done=true; s.actualEnd=new Date().toISOString(); } });
   saveDB(); render(); toast('Lote terminado · abrí la cata cuando quieras');
@@ -3354,6 +3774,62 @@ function piecesNeedingWeighing(){
   });
   list.sort((a,b)=> b.daysSince - a.daysSince);
   return list;
+}
+
+function openWeighSession(){
+  const list = piecesNeedingWeighing();
+  if(list.length === 0){ toast('No hay piezas pendientes de pesaje'); return; }
+  __win._weighSession = { list, idx: 0, startedAt: new Date().toISOString(), count: 0 };
+  renderWeighSession();
+}
+
+function weighSessionAdvance(skip){
+  const ws = __win._weighSession;
+  if(!ws) return;
+  const item = ws.list[ws.idx];
+  if(!skip){
+    const el = __el('ws-weight');
+    const w = +el.value;
+    if(w > 0){
+      const b = db.batches.find(x=>x.id===item.batchId);
+      const p = b.pieces.find(x=>x.id===item.pieceId);
+      const dateISO = new Date().toISOString();
+      const sus = isWeightSuspicious(p, w, dateISO);
+      p.weightLogs = p.weightLogs || [];
+      p.weightLogs.push({
+        id: uid('wl'), date: dateISO, weight: w,
+        note: 'jornada',
+        suspicious: sus ? sus.kind : undefined
+      });
+      ws.count++;
+      saveDB();
+    } else {
+      toast('Ingresa un peso o pulsa Saltar');
+      return;
+    }
+  }
+  ws.idx++;
+  renderWeighSession();
+}
+
+function addEnvLog(batchId){
+  const b = db.batches.find(x=>x.id===batchId);
+  if(!b) return;
+  const dateIn = __el('env-date').value;
+  const t = __el('env-t').value;
+  const hr = __el('env-hr').value;
+  const stage = __el('env-stage').value;
+  if(!dateIn || (!t && !hr)){ toast('Faltan datos'); return; }
+  if(!b.envLog) b.envLog = [];
+  b.envLog.push({
+    id: uid('env'),
+    date: new Date(dateIn).toISOString(),
+    tempC: t===''?null:+t,
+    hr: hr===''?null:+hr,
+    stageKind: stage||null
+  });
+  saveDB();
+  openEnvLogModal(batchId); // refresh
 }
 
 function removeEnvLog(batchId, logId){
@@ -3452,6 +3928,14 @@ function suggestTastingScore(r){
   return Math.round(n*2)/2;
 }
 
+function readTastingForm(){
+  const num = id=>{ const v=__el(id)?.value; return (v===''||v==null)?null:+v; };
+  const r = { apariencia:num('t-apariencia'), textura:num('t-textura'), aroma:num('t-aroma'), aromaInt:num('t-aromaInt') };
+  FLAVOR_AXES.forEach(f=>{ r[f.k]=num('t-'+f.k); r[f.k+'Q']=num('t-'+f.k+'-q'); });
+  r.defectos = DEFECT_CATALOG.map((d,i)=>({name:d.name, sev:+(__el('t-def-'+i)?.value||0)})).filter(d=>d.sev>0);
+  return r;
+}
+
 function defState(t, name){
   const d = (t.defectos||[]).find(x=>x.name===name);
   if(d && d.sev>0) return String(d.sev);
@@ -3461,9 +3945,47 @@ function defState(t, name){
 
 function defectsEvaluatedIn(t, name){ return defState(t||{}, name)!==''; }
 
+function saveTasting(batchId, tastingId){
+  const b = db.batches.find(x=>x.id===batchId);
+  if(!b) return;
+  tastingList(b); // asegura b.tastings
+  const num = (id)=>{ const v = __el(id)?.value; return (v===''||v==null)?null:+v; };
+  const fecha = __el('t-fecha').value || toISODate(new Date());
+  const defVals = DEFECT_CATALOG.map((d,i)=>({ name:d.name, v: __el('t-def-'+i)?.value ?? '' }));
+  const defectos = defVals.filter(d=>d.v!=='' && +d.v>0).map(d=>({ name:d.name, sev:+d.v }));
+  const defOk = defVals.filter(d=>d.v==='0').map(d=>d.name); // evaluados y sin el defecto
+  const rec = {
+    id: tastingId || uid('cat'),
+    apariencia: num('t-apariencia'),
+    aroma: num('t-aroma'),
+    textura: num('t-textura'),
+    notaGlobal: num('t-global'),
+    dulce: num('t-dulce'),
+    salado: num('t-salado'),
+    umami: num('t-umami'),
+    amargo: num('t-amargo'),
+    acido: num('t-acido'),
+    aromaInt: num('t-aromaInt'),
+    dulceQ: num('t-dulce-q'), saladoQ: num('t-salado-q'), umamiQ: num('t-umami-q'),
+    amargoQ: num('t-amargo-q'), acidoQ: num('t-acido-q'),
+    esc: 2, // escala nueva: sabores/aroma 1-5, 3 = balanceado
+    defectos,
+    defOk,
+    notasSab: Object.entries(__win._ntState||{}).filter(([n,v])=>v>0).map(([n,v])=>({n,s:v})),
+    notas: __el('t-notas').value,
+    fecha,
+    dias: tastingDays(b, fecha),
+    ts: new Date().toISOString()
+  };
+  const idx = tastingId ? b.tastings.findIndex(x=>x.id===tastingId) : -1;
+  if(idx>=0) b.tastings[idx] = rec; else b.tastings.push(rec);
+  syncLatestTasting(b);
+  saveDB(); closeModal(); render(); toast(idx>=0?'Cata actualizada':'Cata guardada');
+}
+
 function deleteTasting(batchId, tastingId){
   const b = db.batches.find(x=>x.id===batchId); if(!b) return;
-  if(!confirm('¿Eliminar esta cata?')) return;
+  if(!__confirm('¿Eliminar esta cata?')) return;
   tastingList(b);
   b.tastings = b.tastings.filter(x=>x.id!==tastingId);
   syncLatestTasting(b);
@@ -3473,7 +3995,7 @@ function deleteTasting(batchId, tastingId){
 function discardBatch(id){
   const b = db.batches.find(x=>x.id===id);
   if(b.status==='discarded'){ b.status='in_progress'; saveDB(); render(); return; }
-  if(!confirm(`¿Descartar lote ${b.ref}?\n\nQueda oculto pero recuperable. Para eliminarlo permanentemente usá "Eliminar permanentemente".`)) return;
+  if(!__confirm(`¿Descartar lote ${b.ref}?\n\nQueda oculto pero recuperable. Para eliminarlo permanentemente usá "Eliminar permanentemente".`)) return;
   b.status='discarded'; saveDB(); render(); toast('Lote descartado · recuperable');
 }
 
@@ -3608,7 +4130,7 @@ function moveStage(typeId, idx, dir){
 }
 
 function removeStage(typeId, idx){
-  if(!confirm('¿Eliminar esta etapa?')) return;
+  if(!__confirm('¿Eliminar esta etapa?')) return;
   const t = db.types.find(x=>x.id===typeId);
   t.stages.splice(idx,1); saveDB(); render();
 }
@@ -3626,6 +4148,24 @@ function addStage(typeId, kind){
     ph: meta.ph? {start:5.5,end:5.0,dangerLow:4.4,dangerHigh:5.8} : null
   };
   t.stages.push(stage); saveDB(); closeModal(); render();
+}
+
+function saveIngredient(){
+  const n = __el('ing-n').value.trim();
+  if(!n){ toast('Nombre requerido'); return; }
+  const cat = __el('ing-c').value;
+  const densRaw = __el('ing-dens')?.value;
+  const gPerTsp = (cat==='sal'||cat==='sal-curado') && densRaw!=='' && densRaw!=null ? +densRaw : null;
+  const id = uid('ing');
+  db.ingredients.push({ id, name:n, unit:__el('ing-u').value, category:cat, note:__el('ing-note').value, gPerTsp });
+  saveDB(); closeModal(); render();
+  if(cat === 'carne'){
+    // Encadenar al editor para completar clasificación + perfil nutricional
+    toast('Carne creada — completa su clasificación y nutrientes');
+    editIngredientPrompt(id);
+  } else {
+    toast('Ingrediente creado');
+  }
 }
 
 function deleteIngredient(id){
@@ -3647,6 +4187,67 @@ function deleteIngredient(id){
       saveDB(); render(); toast('Ingrediente eliminado permanentemente');
     }
   });
+}
+
+function saveIngredientEdit(){
+  const id = __win._editIng;
+  const ing = db.ingredients.find(i=>i.id===id);
+  if(!ing) return;
+  const newName = __el('ing-en').value.trim();
+  const oldName = ing.name;
+  if(!newName){ toast('Nombre requerido'); return; }
+  ing.name = newName;
+  ing.unit = __el('ing-eu').value;
+  ing.category = __el('ing-ec').value;
+  ing.note = __el('ing-en2').value;
+  const densRaw = __el('ing-edens')?.value;
+  ing.gPerTsp = (ing.category==='sal'||ing.category==='sal-curado') && densRaw!=='' && densRaw!=null ? +densRaw : null;
+  // Perfil nutricional + clasificación (solo carnes)
+  if(ing.category === 'carne'){
+    const readNum = (id) => {
+      const v = __el(id)?.value;
+      if(v==='' || v==null) return null;
+      const n = +v; return isFinite(n) ? n : null;
+    };
+    const nutr = {};
+    ['kcal','protein','fat','satFat','transFat','sodium_mg','cholesterol','fiber','water'].forEach(k=>{
+      const v = readNum('ing-n-'+k);
+      if(v !== null) nutr[k] = v;
+    });
+    ing.nutr = nutr;
+    const kind = __el('ing-m-kind')?.value || 'generica';
+    ing.meat = {
+      animal: __el('ing-m-animal')?.value || 'cerdo',
+      kind,
+      ...(kind==='generica' ? { fatLevel: __el('ing-m-fatLevel')?.value || 'magro' }
+                            : { cut: (__el('ing-m-cut')?.value || '').trim() })
+    };
+  }
+  // If name changed, cascade update through all recipes, inoculants, brine salts and base meat compositions
+  if(newName !== oldName){
+    let count = 0;
+    db.types.forEach(t=>{
+      t.stages.forEach(s=>{
+        if(s.recipe) s.recipe.forEach(r=>{ if(r.ingredient===oldName){ r.ingredient=newName; count++; } });
+        if(s.inoc && s.inoc.i===oldName){ s.inoc.i=newName; count++; }
+        if(s.brine && s.brine.saltIngredient===oldName){ s.brine.saltIngredient=newName; count++; }
+      });
+      if(t.baseMeat?.composition){
+        t.baseMeat.composition.forEach(c=>{ if(c.ingredient===oldName){ c.ingredient=newName; count++; } });
+      }
+    });
+    db.batches.forEach(b=>{
+      b.stages.forEach(s=>{
+        if(s.recipe) s.recipe.forEach(r=>{ if(r.ingredient===oldName){ r.ingredient=newName; } });
+        if(s.inoc && s.inoc.i===oldName){ s.inoc.i=newName; }
+        if(s.brine && s.brine.saltIngredient===oldName){ s.brine.saltIngredient=newName; }
+      });
+    });
+    if(count) toast('Actualizado en '+count+' referencia'+(count===1?'':'s'));
+  } else {
+    toast('Ingrediente actualizado');
+  }
+  saveDB(); closeModal(); render();
 }
 
 const IDB_NAME = 'laforet_sync';
@@ -3704,8 +4305,35 @@ function idbDel(key){
   });
 }
 
+function icloudSupported(){
+  return typeof window.showSaveFilePicker === 'function' && typeof window.showOpenFilePicker === 'function';
+}
+
+async function icloudLink(){
+  if(!icloudSupported()){
+    __alert('Tu navegador no soporta la API de acceso al sistema de archivos. Usá Chrome, Edge o Brave en Mac desktop.');
+    return;
+  }
+  try {
+    // Suggested name — user should navigate to their iCloud Drive folder (~/Library/Mobile Documents/com~apple~CloudDocs/)
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'laforet_cellar.json',
+      types: [{ description: 'La Forêt data', accept: {'application/json': ['.json']} }],
+    });
+    _cloudHandle = handle;
+    await idbSet('cloudHandle', handle);
+    _cloudStatus = 'linked';
+    await icloudPush();
+    toast('Vinculado · el archivo se guardó en iCloud Drive');
+    renderIcloudStatus();
+    renderSyncModalBody();
+  } catch(err){
+    if(err.name !== 'AbortError') console.error(err);
+  }
+}
+
 async function icloudUnlink(){
-  if(!confirm('¿Desvincular el archivo iCloud? Los datos locales quedan intactos.')) return;
+  if(!__confirm('¿Desvincular el archivo iCloud? Los datos locales quedan intactos.')) return;
   _cloudHandle = null;
   _cloudStatus = 'off';
   await idbDel('cloudHandle');
@@ -3742,6 +4370,28 @@ async function icloudPush(manual){
   }
 }
 
+async function icloudPull(){
+  if(!_cloudHandle){ toast('Primero vincula el archivo'); return; }
+  if(!(await icloudEnsurePermission('read'))) { toast('Permiso denegado'); return; }
+  if(!__confirm('Cargar datos desde el archivo iCloud vinculado. ¿Reemplazar los datos locales actuales?')) return;
+  try {
+    const file = await _cloudHandle.getFile();
+    const text = await file.text();
+    if(!text.trim()){ toast('El archivo está vacío'); return; }
+    db = JSON.parse(text);
+    if(typeof migrateSalts==='function') migrateSalts();
+      if(typeof migrateWeightLogsToPieces==='function') migrateWeightLogsToPieces();
+    saveDBLocal();
+    window.db = db;
+    render();
+    toast('Datos cargados desde iCloud');
+    renderSyncModalBody();
+  } catch(err){
+    console.error('iCloud pull error', err);
+    toast('Error al leer el archivo');
+  }
+}
+
 function icloudDebouncedPush(){
   if(!_cloudHandle) return;
   clearTimeout(_cloudSaveTimer);
@@ -3758,6 +4408,37 @@ async function icloudRestoreHandle(){
       renderIcloudStatus();
     }
   } catch(err){ /* first run */ }
+}
+
+async function icloudOpenExisting(){
+  if(!icloudSupported()){ __alert('Tu navegador no soporta acceso a archivos. Usá Chrome, Edge o Brave en Mac.'); return; }
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'La Forêt data', accept: {'application/json': ['.json']} }],
+      multiple: false,
+    });
+    if(!handle) return;
+    if(!(await ensureHandlePermission(handle, 'readwrite'))){ toast('Permiso denegado'); return; }
+    const file = await handle.getFile();
+    const text = await file.text();
+    if(text.trim()){
+      if(!__confirm('Cargar los datos de este archivo y vincularlo para sincronizar. ¿Reemplazar los datos locales actuales?')) return;
+      db = JSON.parse(text);
+      if(typeof migrateSalts==='function') migrateSalts();
+      if(typeof migrateWeightLogsToPieces==='function') migrateWeightLogsToPieces();
+      saveDBLocal();
+      window.db = db;
+    }
+    _cloudHandle = handle;
+    _cloudStatus = 'linked';
+    await idbSet('cloudHandle', handle);
+    render();
+    toast('Archivo abierto y vinculado');
+    renderIcloudStatus();
+    renderSyncModalBody();
+  } catch(err){
+    if(err.name !== 'AbortError'){ console.error(err); toast('No se pudo abrir el archivo'); }
+  }
 }
 
 async function ensureHandlePermission(handle, mode){
@@ -3792,6 +4473,7 @@ const _saveOrig = saveDB;
 const __saveOrig = saveDB;
 saveDB = function(){ __saveOrig(); bridge.onSave(db); };
 export function getDB(){ return db; }
+export function getCloud(){ return { handle: _cloudHandle, status: _cloudStatus }; }
 export function setDB(next){ db = next; }
 export function bootDB(){ if(!loadDB()){ seedDB(); } return db; }
-export { LS_KEY, EB_TABLE, STAGE_TYPES, STAGE_MAP, SMOKE_WOODS, SMOKE_RANGES, smokeCategoryFor, DEFAULT_G_PER_TSP, LB_TO_KG, KG_PER_5LB, ML_PER_TSP, ML_PER_CUP, scaleInoculant, fmtFrac, saltIngredients, commonSaltIngredients, cureSaltIngredients, cureSaltByName, defaultCommonSaltName, NITRITE_MAX_PPM, NITRATE_MAX_PPM, NITRITE_TARGET_PPM, NITRITE_WARN_PPM, DEFAULT_CAVA_TEMP, DEFAULT_CAVA_PH, RESIDUAL_TYPICAL_NITRITE_PPM, RESIDUAL_TYPICAL_NITRATE_PPM, nitriteHalfLifeDays, nitrateHalfLifeDays, calcResidualNitrite, calcResidualNitrate, nitriteFromNitrateReduction, calcFullResidual, totalCureProcessDays, totalCureProcessDaysBatch, calcCureContribution, calcCureResidual, saltByName, saltDensity, defaultSaltName, BRINE_PRESETS, calcEqBrine, SEED_SALTS, SEED_INGREDIENTS, SEED_TYPES, db, view, editingType, openBatchId, saveDBLocal, SKIP_RENDER, RANGE_ACTIVE, withFocusPreservation, silentSave, normalizeUnit, loadDB, migrateSalts, seedDB, loadExampleRecipe, applyLibraryImport, restoreSalts, resetDB, AW_TARGET_BY_CATEGORY, AW_NO_BARRIER, awTargetForType, calcAw, targetWeightForAw, AW_K, AW_CAL_MIN, AW_UNC_EST, AW_UNC_CAL, AW_UNC_MED, typeWaterFrac, pieceSaltInfo, pieceAwModel, awReadings, typeAwCalibration, _clampAw, pieceAwState, awTxt, targetWeightForAwPiece, safetyStatus, isWeightSuspicious, saturationVaporPressure, vaporPressureDeficit, dryingRateK, theoreticalWeightAt, envStats, caseHardeningRisk, massBalance, HAZARD_CATALOG, hazardsForType, defaultPCCsForType, pccsForType, evaluateHaccp, recordDeviation, diffusivitySaltMeat, fickSaltPenetrationDays, evaluateFickSalt, diffusivitySmoke, erfApprox, fickSmokeProfile, predictProfile, compareProfile, proteolysisIndex, batchProteolysis, DEFECT_CATALOG, CATA_GUIDE, INT_LEGEND, intLevelText, intCls, pillColor, QUAL_NAMES, QUAL_NAMES_TASTE, catShortName, catGuideLine, CATA_PROTOCOL, FLAVOR_AXES, flavorDiag, flavorVerdict, flavorVal, DEFECT_SEV, tastingList, syncLatestTasting, migrateTastings, tastingDays, tastingDefects, batchScore, tastedBatches, optimalWindow, BIAS_AXES, modelBias, applyModelBias, clearModelBias, typeQuality, MEAT_NUTR_SEEDS, MEAT_META_SEEDS, MEAT_FORMS, CUT_TO_INGREDIENT, MEAT_CUTS, MEAT_PROFILES, meatIngredients, meatNutrFor, normalizeComposition, mixMeats, ingredientNutrition, baseMeatForType, BASE_MEAT_COMPOSITIONS, migrateMeatIngredients, migrateBaseMeat, computeNutrition, labelIngredientList, VD, pctVD, requiredSellos, SELLO_META, renderSelloSVG, renderNutritionTableSVG, exportSVGasPNG, exportSVGFile, exportNutritionTablePNG, exportNutritionTableSVGFile, exportSelloPNG, exportSelloSVGFile, exportLabelPNG, renderNutritionLabelSVG, updateBaseMeatPart, addBaseMeatPart, removeBaseMeatPart, updateBaseMeatCut, addBaseMeatCut, removeBaseMeatCut, selloReasonText, exportAllSellos, pearson, batchFeatures, historicalYieldStats, stageLossBreakdown, _cop, _avg, _safeFeatures, INS_PARAMS, typeTotalDaysSafe, BACKUP_PREFIX, BACKUP_LAST_KEY, autoBackup, pruneBackups, listBackups, commitHistoricalImport, restoreBackup, uid, fmt, fmtG, fmtGExact, APP_TZ, fmtDate, fmtDateShort, daysBetween, parseLocalDate, addDays, toISODate, ebDays, nextRefFor, nextSeqFor, refFromLot, previewRef, stageColor, typeTotalDays, batchTab, setBatchTab, todaysAgenda, currentStage, latestWeight, batchProgressPct, timeStatusForStage, latestPieceWeight, findSecadoStage, batchLossTargetPct, pieceStartWeight, pieceStartWeightExplicit, pieceTargetWeight, needsSecadoStartWeights, fitExpDecay, pieceSecadoSamples, pieceEstimation, weightStatusForPiece, weightStatusForBatch, latestBatchMeasurementDate, migrateBackfillBrineOnBatches, migrateStripSaltFromCureBatches, migrateWeightLogsToPieces, phLevel, stepSmoke, toggleWood, stepBrine, stepCureSalt, updateCureSalt, updateBrine, ingredientUsage, ingredientUsageDetail, meatMetaTag, completeStage, openWeightLogModal, removeAwReading, removePieceWeightLog, toggleOutlier, phSafetyVerdict, phRecommendations, finishBatch, piecesNeedingWeighing, removeEnvLog, importGoveeCsv, NOTE_FAMILIES, NOTE_MAX_STAR, noteFamilies, noteIsOff, SCORE_WEIGHTS, DEFECT_PENALTY, suggestTastingScore, defState, defectsEvaluatedIn, deleteTasting, discardBatch, deleteBatchHard, createNewType, duplicateType, deleteType, updateType, updateYield, updateEnv, updatePh, addInoc, removeInoc, updateInoc, addRecipeIng, removeRecipeIng, updateRecipeIng, moveStage, removeStage, addStage, deleteIngredient, IDB_NAME, IDB_STORE, _cloudHandle, _cloudSaveTimer, _cloudStatus, idbGet, idbSet, idbDel, icloudUnlink, icloudEnsurePermission, icloudPush, icloudDebouncedPush, icloudRestoreHandle, ensureHandlePermission, dragIdx, dragStart, dragOver, dropStage, escapeHtml, escapeAttr, _saveOrig, saveDB };
+export { LS_KEY, EB_TABLE, STAGE_TYPES, STAGE_MAP, SMOKE_WOODS, SMOKE_RANGES, smokeCategoryFor, DEFAULT_G_PER_TSP, LB_TO_KG, KG_PER_5LB, ML_PER_TSP, ML_PER_CUP, scaleInoculant, fmtFrac, saltIngredients, commonSaltIngredients, cureSaltIngredients, cureSaltByName, defaultCommonSaltName, NITRITE_MAX_PPM, NITRATE_MAX_PPM, NITRITE_TARGET_PPM, NITRITE_WARN_PPM, DEFAULT_CAVA_TEMP, DEFAULT_CAVA_PH, RESIDUAL_TYPICAL_NITRITE_PPM, RESIDUAL_TYPICAL_NITRATE_PPM, nitriteHalfLifeDays, nitrateHalfLifeDays, calcResidualNitrite, calcResidualNitrate, nitriteFromNitrateReduction, calcFullResidual, totalCureProcessDays, totalCureProcessDaysBatch, calcCureContribution, calcCureResidual, saltByName, saltDensity, defaultSaltName, BRINE_PRESETS, calcEqBrine, SEED_SALTS, SEED_INGREDIENTS, SEED_TYPES, db, view, editingType, openBatchId, saveDBLocal, SKIP_RENDER, RANGE_ACTIVE, withFocusPreservation, silentSave, normalizeUnit, loadDB, migrateSalts, seedDB, loadExampleRecipe, exportDB, exportLibrary, applyLibraryImport, restoreSalts, resetDB, AW_TARGET_BY_CATEGORY, AW_NO_BARRIER, awTargetForType, calcAw, targetWeightForAw, AW_K, AW_CAL_MIN, AW_UNC_EST, AW_UNC_CAL, AW_UNC_MED, typeWaterFrac, pieceSaltInfo, pieceAwModel, awReadings, typeAwCalibration, _clampAw, pieceAwState, awTxt, targetWeightForAwPiece, safetyStatus, isWeightSuspicious, saturationVaporPressure, vaporPressureDeficit, dryingRateK, theoreticalWeightAt, envStats, caseHardeningRisk, massBalance, HAZARD_CATALOG, hazardsForType, defaultPCCsForType, pccsForType, evaluateHaccp, recordDeviation, saveDeviation, diffusivitySaltMeat, fickSaltPenetrationDays, evaluateFickSalt, diffusivitySmoke, erfApprox, fickSmokeProfile, predictProfile, compareProfile, proteolysisIndex, batchProteolysis, DEFECT_CATALOG, CATA_GUIDE, INT_LEGEND, intLevelText, intCls, pillColor, QUAL_NAMES, QUAL_NAMES_TASTE, catShortName, catGuideLine, CATA_PROTOCOL, FLAVOR_AXES, flavorDiag, flavorVerdict, flavorVal, DEFECT_SEV, tastingList, syncLatestTasting, migrateTastings, tastingDays, tastingDefects, batchScore, tastedBatches, optimalWindow, BIAS_AXES, modelBias, applyModelBias, clearModelBias, typeQuality, MEAT_NUTR_SEEDS, MEAT_META_SEEDS, MEAT_FORMS, CUT_TO_INGREDIENT, MEAT_CUTS, MEAT_PROFILES, meatIngredients, meatNutrFor, normalizeComposition, mixMeats, ingredientNutrition, baseMeatForType, BASE_MEAT_COMPOSITIONS, migrateMeatIngredients, migrateBaseMeat, computeNutrition, labelIngredientList, VD, pctVD, requiredSellos, SELLO_META, renderSelloSVG, renderNutritionTableSVG, exportSVGasPNG, exportSVGFile, exportNutritionTablePNG, exportNutritionTableSVGFile, exportSelloPNG, exportSelloSVGFile, exportLabelPNG, renderNutritionLabelSVG, updateBaseMeatPart, addBaseMeatPart, removeBaseMeatPart, updateBaseMeatCut, addBaseMeatCut, removeBaseMeatCut, selloReasonText, exportAllSellos, pearson, batchFeatures, historicalYieldStats, stageLossBreakdown, _cop, _avg, _safeFeatures, INS_PARAMS, typeTotalDaysSafe, BACKUP_PREFIX, BACKUP_LAST_KEY, autoBackup, pruneBackups, listBackups, downloadBackup, commitHistoricalImport, restoreBackup, uid, fmt, fmtG, fmtGExact, APP_TZ, fmtDate, fmtDateShort, daysBetween, parseLocalDate, addDays, toISODate, ebDays, nextRefFor, nextSeqFor, refFromLot, previewRef, stageColor, typeTotalDays, batchTab, setBatchTab, todaysAgenda, currentStage, latestWeight, batchProgressPct, timeStatusForStage, latestPieceWeight, findSecadoStage, batchLossTargetPct, pieceStartWeight, pieceStartWeightExplicit, pieceTargetWeight, needsSecadoStartWeights, fitExpDecay, pieceSecadoSamples, pieceEstimation, weightStatusForPiece, weightStatusForBatch, latestBatchMeasurementDate, migrateBackfillBrineOnBatches, migrateStripSaltFromCureBatches, migrateWeightLogsToPieces, phLevel, stepSmoke, toggleWood, stepBrine, stepCureSalt, updateCureSalt, updateBrine, ingredientUsage, ingredientUsageDetail, meatMetaTag, openEditBatchModal, openNewBatchModal, createBatch, completeStage, saveStageDates, openWeightLogModal, saveSecadoStart, savePieceWeightLog, saveAwReading, removeAwReading, removePieceWeightLog, saveBulkWeightLog, toggleOutlier, phSafetyVerdict, phRecommendations, savePh, finishBatch, piecesNeedingWeighing, openWeighSession, weighSessionAdvance, addEnvLog, removeEnvLog, importGoveeCsv, NOTE_FAMILIES, NOTE_MAX_STAR, noteFamilies, noteIsOff, SCORE_WEIGHTS, DEFECT_PENALTY, suggestTastingScore, readTastingForm, defState, defectsEvaluatedIn, saveTasting, deleteTasting, discardBatch, deleteBatchHard, createNewType, duplicateType, deleteType, updateType, updateYield, updateEnv, updatePh, addInoc, removeInoc, updateInoc, addRecipeIng, removeRecipeIng, updateRecipeIng, moveStage, removeStage, addStage, saveIngredient, deleteIngredient, saveIngredientEdit, IDB_NAME, IDB_STORE, _cloudHandle, _cloudSaveTimer, _cloudStatus, idbGet, idbSet, idbDel, icloudSupported, icloudLink, icloudUnlink, icloudEnsurePermission, icloudPush, icloudPull, icloudDebouncedPush, icloudRestoreHandle, icloudOpenExisting, ensureHandlePermission, dragIdx, dragStart, dragOver, dropStage, escapeHtml, escapeAttr, _saveOrig, saveDB };

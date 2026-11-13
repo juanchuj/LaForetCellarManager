@@ -67,8 +67,8 @@ Revisión hecha sobre v4.4.3 con un lote de datos demo realista (5 recetas, 8 lo
 
 | Fase | Alcance | Estado |
 |---|---|---|
-| 1 | Base técnica (Vite, React, Tailwind 4, shadcn, Sonner), tema crema, shell y navegación, Panel, Vista de cava, Lotes, resumen de lote | **Entregada** (vista previa) |
-| 2 | Detalle de lote completo + registros (peso, pH, ambiente/Govee, aw, catas), nuevo lote, jornada de pesaje, Tipos + editor, Ingredientes, sync iCloud | Pendiente |
-| 3 | Biblioteca (import/export/backups), Analytics, Defectos, etiqueta nutricional y sellos | Pendiente |
+| 1 | Base técnica (Vite, React, Tailwind 4, shadcn, Sonner), tema crema, shell y navegación, Panel, Vista de cava, Lotes, resumen de lote | **Entregada** · v5.0.0 |
+| 2 | Detalle de lote completo + registros (peso, pH, ambiente/Govee, aw, catas), nuevo lote, jornada de pesaje, Tipos + editor, Ingredientes, sync iCloud | **Entregada** · v5.1.0 |
+| 3 | Biblioteca (import/export/backups), Analytics, Defectos, etiqueta nutricional y sellos | **Entregada** · v5.2.0 |
 
-Hasta terminar la fase 2, v4.4.3 sigue siendo la versión de producción. v5 incluye v4.4.3 en `/v4/` y ambas leen y escriben los mismos datos del navegador.
+Desde v5.2.0 todas las secciones están en v5 y la copia de v4.4.3 ya no se incluye en el build. v5 incluye v4.4.3 en `/v4/` y ambas leen y escriben los mismos datos del navegador.

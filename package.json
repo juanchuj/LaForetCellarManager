@@ -1,14 +1,14 @@
 {
   "name": "laforet-cellar-manager",
   "private": true,
-  "version": "5.0.0",
+  "version": "5.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "gen:core": "node scripts/gen-core.mjs legacy/index-v4.4.3.html src/lib/core/core.js",
-    "test:parity": "node scripts/parity-test.mjs",
+    "test:parity": "node scripts/parity-test.mjs && node scripts/parity-forms.mjs",
     "demo:data": "node scripts/demo-fixture.mjs"
   },
   "dependencies": {

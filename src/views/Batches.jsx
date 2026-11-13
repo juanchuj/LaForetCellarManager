@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { ChevronRight, Package, Plus, Search } from 'lucide-react';
-import { useDB } from '@/lib/store';
+import { useDB, core } from '@/lib/store';
 import { navigate } from '@/lib/router';
-import { pending } from '@/lib/notify';
 import { STATUS, batchRow, fmt, fmtDate, fmtG, stageVar } from '@/lib/domain';
 import { PageHeader } from '@/components/page-header';
 import { EmptyState } from '@/components/empty-state';
@@ -36,7 +35,7 @@ export function Batches() {
         eyebrow="Producción"
         title="Lotes"
         description="Todos los lotes, del más reciente al más antiguo."
-        actions={<Button onClick={() => pending('El asistente de nuevo lote')}><Plus /> Nuevo lote</Button>}
+        actions={<Button onClick={() => core.openNewBatchModal()}><Plus /> Nuevo lote</Button>}
       />
 
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center">

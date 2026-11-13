@@ -1,8 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ChartGantt, Crosshair, Plus } from 'lucide-react';
-import { useDB } from '@/lib/store';
+import { useDB, core } from '@/lib/store';
 import { navigate } from '@/lib/router';
-import { pending } from '@/lib/notify';
 import { fmtDate, fmtG, greenWeight, stageVar } from '@/lib/domain';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/page-header';
@@ -79,7 +78,7 @@ export function Timeline() {
         eyebrow="Vista de cava"
         title="Línea de tiempo"
         description="Etapas reales y proyectadas de cada lote. Hacé clic en una fila para abrir el lote."
-        actions={<Button onClick={() => pending('El asistente de nuevo lote')}><Plus /> Nuevo lote</Button>}
+        actions={<Button onClick={() => core.openNewBatchModal()}><Plus /> Nuevo lote</Button>}
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">

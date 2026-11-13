@@ -14,7 +14,15 @@ const classify = code => /\bdocument\.|\bwindow\.|innerHTML|querySelector|addEve
   : /<(div|span|button|svg|table|input|section)\b/.test(code) ? 'html' : 'logic';
 // UI calls that logic is allowed to make — forwarded to React through the bridge
 const BRIDGED = ['render', 'toast', 'closeModal', 'renderIfNoFocus', 'goto', 'openBulkWeightModal', 'openTastingModal',
-  'openEnvLogModal', 'openSafeDeleteModal', 'renderIcloudStatus', 'renderSyncModalBody', 'showModal', 'updateNavCounts'];
+  'openEnvLogModal', 'openSafeDeleteModal', 'renderIcloudStatus', 'renderSyncModalBody', 'showModal', 'updateNavCounts',
+  'renderNewBatchModal', 'renderWeighSession', 'editIngredientPrompt', 'renderFlowStage', 'openSecadoStartModal'];
+// Form-driven data writes: kept VERBATIM, only their DOM reads are rewired —
+//   document.getElementById(id) → __el(id)  (reads the React form state in bridge.form)
+//   window._state               → __win._state
+const FORM = new Set(['createBatch', 'openNewBatchModal', 'openEditBatchModal', 'saveStageDates', 'saveSecadoStart',
+  'savePieceWeightLog', 'saveAwReading', 'saveBulkWeightLog', 'savePh', 'openWeighSession', 'weighSessionAdvance',
+  'addEnvLog', 'saveTasting', 'readTastingForm', 'saveIngredient', 'saveIngredientEdit', 'saveDeviation',
+  'icloudSupported', 'icloudLink', 'icloudPull', 'icloudOpenExisting', 'ensureHandlePermission', 'exportDB', 'exportLibrary', 'downloadBackup']);
 // String generators for labels/seals and their file exporters: domain output, kept verbatim
 const FORCE = new Set(['renderSelloSVG', 'renderNutritionTableSVG', 'exportSVGasPNG', 'exportSVGFile']);
 const all = {}; ast.body.forEach((n, i) => isDecl(n) && namesOf(n).forEach(x => (all[x] = i)));
@@ -22,7 +30,7 @@ const keep = new Set();
 ast.body.forEach((n, i) => {
   if (!isDecl(n)) return; const names = namesOf(n);
   if (names.some(x => BRIDGED.includes(x))) return;
-  if (classify(src.slice(n.start, n.end)) === 'logic' || names.some(x => FORCE.has(x))) keep.add(i);
+  if (classify(src.slice(n.start, n.end)) === 'logic' || names.some(x => FORCE.has(x) || FORM.has(x))) keep.add(i);
 });
 const kept = new Set([...keep].flatMap(i => namesOf(ast.body[i])));
 const missing = new Map();
@@ -38,13 +46,26 @@ let out = `/* La Forêt · Cellar Manager — core domain module.
 /* eslint-disable */
 import { bridge } from './bridge.js';
 ${BRIDGED.map(b => `const ${b} = (...a) => bridge.${b}(...a);`).join('\n')}
+const __el = (id) => bridge.el(id);
+const __win = bridge.win;
+const __confirm = (msg) => bridge.confirm(msg);
+const __alert = (msg) => bridge.alert(msg);
 `;
-for (const i of [...keep].sort((a, b) => a - b)) out += '\n' + src.slice(ast.body[i].start, ast.body[i].end) + '\n';
+const rewire = (code, form) => {
+  let c = code.replace(/(?<![.\w])confirm\(/g, '__confirm(').replace(/(?<![.\w])alert\(/g, '__alert(');
+  if (form) c = c.replace(/document\.getElementById\(/g, '__el(').replace(/window\._/g, '__win._');
+  return c;
+};
+for (const i of [...keep].sort((a, b) => a - b)) {
+  const n = ast.body[i];
+  out += '\n' + rewire(src.slice(n.start, n.end), namesOf(n).some(x => FORM.has(x))) + '\n';
+}
 out += `
 /* ── bridge glue ── */
 const __saveOrig = saveDB;
 saveDB = function(){ __saveOrig(); bridge.onSave(db); };
 export function getDB(){ return db; }
+export function getCloud(){ return { handle: _cloudHandle, status: _cloudStatus }; }
 export function setDB(next){ db = next; }
 export function bootDB(){ if(!loadDB()){ seedDB(); } return db; }
 export { ${[...kept].filter(n => n !== 'saveDB').join(', ')}, saveDB };
